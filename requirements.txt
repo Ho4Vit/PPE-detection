@@ -1,0 +1,15 @@
+# --- Core AI & Computer Vision ---
+ultralytics      # Thư viện chính chạy YOLOv8
+opencv-python    # Xử lý hình ảnh và video (cv2)
+torch            # Backend cho YOLOv8
+torchvision
+
+# --- Image Processing ---
+Pillow           # Xử lý định dạng ảnh cho Tkinter (PIL)
+
+# --- Data & Excel ---
+pandas           # Quản lý dữ liệu bảng
+openpyxl         # Thư viện hỗ trợ pandas ghi file Excel (.xlsx)
+
+# --- Utilities ---
+numpy            # Hỗ trợ tính toán mảng (thường đi kèm opencv/torch)
