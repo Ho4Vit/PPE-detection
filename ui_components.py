@@ -19,7 +19,6 @@ class VideoDisplay(tk.Canvas):
 class ChecklistPanel(tk.LabelFrame):
     def __init__(self, parent):
         super().__init__(parent, text="Yêu cầu bảo hộ bắt buộc", padx=10, pady=10, bg='#ecf0f1', font=('Arial', 10, 'bold'))
-        # Mặc định tích chọn Vest và Helmet
         self.vars = {
             'Vest': tk.BooleanVar(value=True),
             'Helmet': tk.BooleanVar(value=True),

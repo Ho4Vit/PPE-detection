@@ -2,33 +2,14 @@ import cv2
 import os
 import time
 import threading
-import sqlite3
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from ultralytics import YOLO
 
-# ==========================================
-# 1. DATABASE LOGIC
-# ==========================================
-class ViolationDB:
-    def __init__(self):
-        self.conn = sqlite3.connect("ppe_history.db", check_same_thread=False)
-        cursor = self.conn.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS violations 
-                          (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                           time TEXT, items TEXT, image_path TEXT)''')
-        self.conn.commit()
 
-    def log(self, items, path):
-        t = time.strftime("%Y-%m-%d %H:%M:%S")
-        cursor = self.conn.cursor()
-        cursor.execute("INSERT INTO violations (time, items, image_path) VALUES (?, ?, ?)", (t, items, path))
-        self.conn.commit()
+# DETECTION 
 
-# ==========================================
-# 2. DETECTION LOGIC (Đã thêm nhãn Mask)
-# ==========================================
 class PPEDetector:
     def __init__(self, model_path):
         if not os.path.exists(model_path):
@@ -38,7 +19,6 @@ class PPEDetector:
         self.violation_start_time = None 
 
     def detect_and_check(self, frame, required_items):
-        # conf=0.25 giúp phát hiện các vật thể nhỏ như khẩu trang tốt hơn
         results = self.model(frame, stream=True, conf=0.25)
         detected_classes = set()
         detected_objects = [] 
@@ -58,20 +38,15 @@ class PPEDetector:
                 coords = box.xyxy[0].cpu().numpy().astype(int)
                 detected_objects.append({'name': name, 'box': coords})
 
-        # Logic kiểm tra vi phạm (Dựa trên nhãn có sẵn trong model)
         violations = []
-        
-        # Kiểm tra Mũ (Hardhat)
         if 'Hardhat' in required_items:
             if 'NO-Hardhat' in detected_classes or (found_person and 'Hardhat' not in detected_classes):
                 violations.append("Hardhat")
         
-        # Kiểm tra Áo (Safety Vest)
         if 'Safety Vest' in required_items:
             if 'NO-Safety Vest' in detected_classes or (found_person and 'Safety Vest' not in detected_classes):
                 violations.append("Safety Vest")
                 
-        # Kiểm tra Khẩu trang (Mask)
         if 'Mask' in required_items:
             if 'NO-Mask' in detected_classes or (found_person and 'Mask' not in detected_classes):
                 violations.append("Mask")
@@ -85,7 +60,7 @@ class PPEDetector:
                 self.violation_start_time = time.time()
             
             elapsed = time.time() - self.violation_start_time
-            if elapsed >= 2: # Sau 2s xác nhận vi phạm
+            if elapsed >= 2:
                 is_safe = False
                 msg = f"DANGER: MISSING {', '.join(violations).upper()}"
                 color = (0, 0, 255)
@@ -101,9 +76,9 @@ class PPEDetector:
         cv2.putText(annotated_frame, msg, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
         return annotated_frame, is_safe, violations, detected_objects
 
-# ==========================================
-# 3. MAIN GUI APP
-# ==========================================
+
+#  GUI
+
 class PPEApp:
     def __init__(self, window):
         self.window = window
@@ -111,8 +86,8 @@ class PPEApp:
         self.window.geometry("1200x800")
         self.window.configure(bg='#ecf0f1')
 
-        self.db = ViolationDB()
-        self.detector = PPEDetector("weights/best.pt") # Đảm bảo file model đặt đúng tên
+        # ĐÃ XÓA self.db = ViolationDB()
+        self.detector = PPEDetector("weights/best.pt") 
         if not os.path.exists("violations"): os.makedirs("violations")
 
         self.is_running = False
@@ -126,17 +101,14 @@ class PPEApp:
         container = tk.Frame(self.window, bg='#ecf0f1')
         container.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
 
-        # Màn hình Video
         self.canvas = tk.Canvas(container, width=850, height=550, bg="black")
         self.canvas.pack(side=tk.LEFT, padx=10)
 
-        # Bảng điều khiển bên phải
         right_panel = tk.Frame(container, bg='#ecf0f1')
         right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         tk.Label(right_panel, text="YÊU CẦU BẢO HỘ", font=('Arial', 12, 'bold'), bg='#ecf0f1').pack(pady=10)
         
-        # Danh sách Checklist đầy đủ
         self.check_vars = {
             'Hardhat': tk.BooleanVar(value=True),
             'Safety Vest': tk.BooleanVar(value=True),
@@ -153,7 +125,6 @@ class PPEApp:
         tk.Button(btn_frame, text="🎬 CHỌN VIDEO", command=self.process_video, **btn_s).pack(pady=5)
         tk.Button(btn_frame, text="🛑 DỪNG", command=self.stop_stream, bg='#e74c3c', fg='white', **btn_s).pack(pady=15)
 
-        # Khu vực hiển thị ảnh cắt (Crops)
         self.crop_box = tk.LabelFrame(right_panel, text="ĐỐI TƯỢNG PHÁT HIỆN", bg='#ecf0f1')
         self.crop_box.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
@@ -168,16 +139,14 @@ class PPEApp:
         self.canvas.create_image(425, 275, image=self.photo)
 
     def display_crops(self, frame, detected_objects):
-        """Cắt ảnh các vật thể đang được chọn trên checklist"""
         for widget in self.crop_box.winfo_children(): widget.destroy()
         count = 0
         target_labels = ['Hardhat', 'Safety Vest', 'Mask', 'NO-Hardhat', 'NO-Safety Vest', 'NO-Mask']
         
         for obj in detected_objects:
-            if count >= 3: break # Hiển thị tối đa 3 ảnh cắt để tránh lag
+            if count >= 3: break
             if obj['name'] in target_labels:
                 x1, y1, x2, y2 = obj['box']
-                # Xử lý tọa độ biên
                 h, w, _ = frame.shape
                 y1, y2 = max(0, y1), min(h, y2)
                 x1, x2 = max(0, x1), min(w, x2)
@@ -211,7 +180,7 @@ class PPEApp:
             ret, frame = cap.read()
             if not ret: break
             self._run_logic(frame)
-            time.sleep(0.01) # Giữ cho UI phản hồi tốt
+            time.sleep(0.01)
         cap.release()
         self.is_running = False
 
@@ -219,10 +188,8 @@ class PPEApp:
         required = [k for k, v in self.check_vars.items() if v.get()]
         res_frame, is_safe, violations, objs = self.detector.detect_and_check(frame, required)
         
-        # Cập nhật hình ảnh lên Canvas
         self.window.after(0, self.update_display, res_frame)
         
-        # Cập nhật trạng thái Safety/Unsafe
         if not is_safe:
             msg = f"CẢNH BÁO: THIẾU {', '.join(violations).upper()}"
             self.window.after(0, lambda m=msg: self.status_lbl.config(text=m, bg='#e74c3c'))
@@ -230,7 +197,6 @@ class PPEApp:
         else:
             self.window.after(0, lambda: self.status_lbl.config(text="TRẠNG THÁI: AN TOÀN", bg='#27ae60'))
         
-        # Cập nhật ảnh cắt mỗi 0.5 giây
         if int(time.time() * 10) % 5 == 0:
             self.window.after(0, self.display_crops, frame, objs)
 
@@ -238,7 +204,7 @@ class PPEApp:
         if time.time() - self.last_log_time > 5:
             path = f"violations/danger_{int(time.time())}.jpg"
             cv2.imwrite(path, frame)
-            self.db.log(", ".join(violations), path)
+            # ĐÃ XÓA self.db.log(...)
             self.last_log_time = time.time()
 
     def stop_stream(self):
