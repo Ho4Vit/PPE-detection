@@ -11,7 +11,10 @@ import openpyxl
 from openpyxl.drawing.image import Image as OpenpyxlImage
 import io
 
-# --- QUẢN LÝ EXCEL (CHỈ LƯU FILE EXCEL VÀO THƯ MỤC) ---
+# Import class từ file image_processor.py
+from image_processor import ImageEnhancer
+
+# --- QUẢN LÝ EXCEL ---
 class ViolationLogger:
     def __init__(self, folder="violations"):
         self.folder = folder
@@ -43,7 +46,6 @@ class ViolationLogger:
             current_row = ws.max_row + 1
             ws.append([now, violation_str, f"Phát hiện thiếu: {violation_str.upper()}", ""]) 
 
-            # Xử lý ảnh trực tiếp từ bộ nhớ để chèn vào Excel (Không tạo file .jpg lẻ)
             success, encoded_image = cv2.imencode('.jpg', frame)
             if success:
                 img_data = io.BytesIO(encoded_image.tobytes())
@@ -56,7 +58,7 @@ class ViolationLogger:
         except Exception as e:
             print(f"Lỗi ghi Excel: {e}")
 
-# --- BỘ NHẬN DIỆN YOLO ---
+# --- BỘ NHẬN DIỆN YOLO TÍCH HỢP IMAGE ENHANCER ---
 class PPEDetector:
     def __init__(self, model_path):
         self.model = YOLO(model_path)
@@ -64,21 +66,34 @@ class PPEDetector:
         self.violation_start_time = None 
 
     def detect_and_check(self, frame, required_items):
-        results = self.model(frame, stream=True, conf=0.25)
+
+        # 1. Giảm nhiễu
+        processed_frame = ImageEnhancer.reduce_noise(frame)
+        # 2. Cân bằng độ tương phản (CLAHE)
+        processed_frame = ImageEnhancer.apply_clahe(processed_frame)
+        # 3. Làm sắc nét để AI dễ nhận diện cạnh vật thể
+        processed_frame = ImageEnhancer.sharpen_image(processed_frame)
+
+        # Nhận diện vật thể 
+        results = self.model(processed_frame, stream=True, conf=0.4)
+        
         detected_classes = set()
-        annotated_frame = frame.copy()
+        annotated_frame = frame.copy() # Vẽ lên frame gốc để hiển thị trung thực
         
         found_person = False
         for r in results:
-            annotated_frame = r.plot() 
+            # Lấy thông tin vẽ box từ ảnh xử lý áp lên frame hiển thị
+            annotated_frame = r.plot(img=annotated_frame) 
             for box in r.boxes:
                 name = self.class_names.get(int(box.cls), "Unknown")
                 detected_classes.add(name)
                 if name == 'Person': found_person = True
 
+        # Logic kiểm tra vi phạm
         violations = []
         for item in required_items:
-            if f'NO-{item}' in detected_classes or (found_person and item not in detected_classes):
+            # Kiểm tra nếu thiếu item so với yêu cầu
+            if (found_person and item not in detected_classes):
                 violations.append(item)
 
         is_safe = True
@@ -102,16 +117,16 @@ class PPEDetector:
 class PPEApp:
     def __init__(self, window):
         self.window = window
-        self.window.title("GIÁM SÁT PPE - CHỈ LƯU EXCEL")
+        self.window.title("GIÁM SÁT PPE - ENHANCED VERSION")
         self.window.geometry("1050x700")
         
         self.excel_logger = ViolationLogger()
-        self.detector = PPEDetector("weights/best.pt")
+        self.detector = PPEDetector("weights/best.pt") # Đảm bảo file weight đúng đường dẫn
         self.is_running, self.last_log_time = False, 0
         self._init_ui()
 
     def _init_ui(self):
-        tk.Label(self.window, text="HỆ THỐNG GIÁM SÁT AN TOÀN", font=('Arial', 20, 'bold'), bg='#2c3e50', fg='white', pady=10).pack(fill=tk.X)
+        tk.Label(self.window, text="HỆ THỐNG GIÁM SÁT AN TOÀN PPE", font=('Arial', 20, 'bold'), bg='#2c3e50', fg='white', pady=10).pack(fill=tk.X)
         container = tk.Frame(self.window, bg='#ecf0f1')
         container.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
 
@@ -121,7 +136,7 @@ class PPEApp:
         right_panel = tk.Frame(container, bg='#ecf0f1')
         right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        tk.Label(right_panel, text="CÀI ĐẶT", font=('Arial', 12, 'bold'), bg='#ecf0f1').pack(pady=10)
+        tk.Label(right_panel, text="CÀI ĐẶT KIỂM TRA", font=('Arial', 12, 'bold'), bg='#ecf0f1').pack(pady=10)
         self.check_vars = {k: tk.BooleanVar(value=True) for k in ['Hardhat', 'Safety Vest', 'Mask']}
         for text, var in self.check_vars.items():
             tk.Checkbutton(right_panel, text=text, variable=var, bg='#ecf0f1', font=('Arial', 11)).pack(anchor=tk.W, padx=20)
@@ -144,12 +159,17 @@ class PPEApp:
 
     def process_image(self):
         path = filedialog.askopenfilename()
-        if path: self.stop_stream(); self._run_logic(cv2.imread(path))
+        if path: 
+            self.stop_stream()
+            frame = cv2.imread(path)
+            if frame is not None:
+                self._run_logic(frame)
 
     def process_video(self):
         path = filedialog.askopenfilename()
         if path:
-            self.stop_stream(); self.is_running = True
+            self.stop_stream()
+            self.is_running = True
             threading.Thread(target=self.video_loop, args=(path,), daemon=True).start()
 
     def video_loop(self, path):
@@ -159,7 +179,8 @@ class PPEApp:
             if not ret: break
             self._run_logic(frame)
             time.sleep(0.01)
-        cap.release(); self.is_running = False
+        cap.release()
+        self.is_running = False
 
     def _run_logic(self, frame):
         req = [k for k, v in self.check_vars.items() if v.get()]
@@ -167,9 +188,8 @@ class PPEApp:
         self.window.after(0, self.update_display, res_f)
         
         if not safe:
-            self.window.after(0, lambda: self.status_lbl.config(text=f"CẢNH BÁO: THIẾU {', '.join(viol)}", bg='#e74c3c'))
+            self.window.after(0, lambda: self.status_lbl.config(text=f"CẢNH BÁO: THIẾU {', '.join(viol).upper()}", bg='#e74c3c'))
             if time.time() - self.last_log_time > 5:
-                # Ghi trực tiếp frame vào Excel thông qua bộ nhớ tạm
                 self.excel_logger.log_to_excel(viol, frame)
                 self.last_log_time = time.time()
         else:
@@ -181,7 +201,8 @@ class PPEApp:
 
     def stop_stream(self):
         self.is_running = False
-        time.sleep(0.2); self.canvas.delete("all")
+        time.sleep(0.2)
+        self.canvas.delete("all")
         self.status_lbl.config(text="SẴN SÀNG", bg='#34495e')
 
 if __name__ == "__main__":
