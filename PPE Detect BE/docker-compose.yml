@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  ai-detection-service:
+    build: .
+    container_name: ppe_ai_fastapi
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/workspace
+      - ./models:/workspace/models
+    environment:
+      # Định tuyến thông qua mạng nội bộ Docker để đẩy log về Server Spring Boot chính của bạn
+      - SPRING_BOOT_API_URL=http://host.docker.internal:8080/api/v1/violations
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
