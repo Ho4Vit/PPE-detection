@@ -1,52 +1,59 @@
 import React from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
-// IMPORT LAYOUTS (Điều chỉnh lại đường dẫn khít với dự án của bạn nếu cần)
-import DashboardLayout from "@/components/layouts/DashboardLayout.jsx";
-import AdminLayout from "@/components/layouts/AdminLayout.jsx";
+// PAGES HIỆN CÓ (Dùng đường dẫn tương đối nhảy trực tiếp)
+import Login from "../pages/LoginPage.jsx";
+import LoginSuccessPage from "../pages/LoginSuccessPage.jsx";
 
-// PAGES PUBLIC
-import Login from "@/pages/Login.jsx";
+// Component bảo vệ Route (Ngăn truy cập lậu vào dashboard nếu chưa có Cookie định danh)
+const ProtectedRoute = ({ children }) => {
+    const { isAuthenticated, loading } = useAuth();
 
-// PAGES USER / OPERATOR (Giám sát an toàn)
-import Home from "@/pages/Home.jsx";
-import DashboardTest from "@/pages/DashboardTest.jsx"; // File màn hình camera HD chúng ta vừa tối ưu
-import ViolationHistory from "@/pages/ViolationHistory.jsx"; // Trang xem log và xuất thống kê Excel
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-slate-900 text-white">
+                <p className="text-sm font-bold uppercase tracking-widest animate-pulse">
+                    Đang xác thực phiên làm việc...
+                </p>
+            </div>
+        );
+    }
 
-// PAGES ADMIN (Quản trị hệ thống PPE)
-import CameraManagement from "@/pages/admin/CameraManagement.jsx";
-import SystemSettings from "@/pages/admin/SystemSettings.jsx";
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
 
 export default function AppRoutes() {
     return (
         <Routes>
-            {/* ================= 1. CÁC TRANG PUBLIC ĐỘC LẬP ================= */}
+            {/* ================= 1. CÁC TUYẾN ĐƯỜNG PUBLIC ================= */}
+            {/* Trang chứa nút bấm gọi luồng Đăng nhập Google */}
             <Route path="/login" element={<Login />} />
 
-            {/* ================= 2. PHÂN VÙNG GIÁM SÁT (OPERATOR AREA) ================= */}
-            {/* Nhóm này dùng chung DashboardLayout (Có Sidebar điều hướng, Header hiển thị trạng thái) */}
-            <Route element={<DashboardLayout />}>
-                {/* Trang tổng quan hệ thống */}
-                <Route path="/" element={<Home />} />
+            {/* Cổng đón đầu redirect từ Spring Boot OAuth2 (?status=success) */}
+            <Route path="/login-success" element={<LoginSuccessPage />} />
 
-                {/* Màn hình giám sát Real-time Camera (File code DashboardTest) */}
-                <Route path="/live-monitor" element={<DashboardTest />} />
 
-                {/* Trang tra cứu lịch sử vi phạm & Xuất báo cáo Excel */}
-                <Route path="/history" element={<ViolationHistory />} />
-            </Route>
+            {/* ================= 2. PHÂN VÙNG BẢO MẬT (DÀNH CHO CÁC TRANG SAU NÀY) ================= */}
+            {/* Khi cookie hợp lệ, LoginSuccessPage sẽ đá người dùng vào đây */}
+            <Route
+                path="/dashboard"
+                element={
+                    <ProtectedRoute>
+                        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white">
+                            <h2 className="text-2xl font-black text-green-400 uppercase tracking-wider mb-2">
+                                ĐĂNG NHẬP THÀNH CÔNG!
+                            </h2>
+                            <p className="text-slate-400 text-sm font-medium">
+                                Hệ thống bảo mật đã xác thực Cookie thành công. (Giao diện Dashboard camera đang phát triển).
+                            </p>
+                        </div>
+                    </ProtectedRoute>
+                }
+            />
 
-            {/* ================= 3. PHÂN VÙNG QUẢN TRỊ (ADMIN AREA) ================= */}
-            {/* Nhóm này dùng chung AdminLayout riêng để cấu hình phần cứng/hệ thống */}
-            <Route element={<AdminLayout />}>
-                {/* Quản lý danh sách, cấu hình IP/Luồng RTSP của các Camera */}
-                <Route path="/admin/cameras" element={<CameraManagement />} />
 
-                {/* Cấu hình hệ thống (Ví dụ: Chỉnh sửa thời gian vi phạm 5s, cấu hình gửi mail) */}
-                <Route path="/admin/settings" element={<SystemSettings />} />
-            </Route>
-
-            {/* ================= 4. TRANG BÁO LỖI 404 (SECTOR NOT FOUND) ================= */}
+            {/* ================= 3. TRANG BÁO LỖI 404 ================= */}
             <Route path="*" element={
                 <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 px-6 text-center text-white">
                     <h1 className="text-9xl font-black text-slate-800 italic tracking-tighter leading-none mb-4 animate-pulse">404</h1>
@@ -54,13 +61,13 @@ export default function AppRoutes() {
                         SYSTEM ERROR: SECTOR NOT FOUND
                     </h2>
                     <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-8 max-w-sm">
-                        Đường dẫn yêu cầu không tồn tại hoặc bạn không có quyền truy cập vùng an toàn này.
+                        Đường dẫn yêu cầu không tồn tại hoặc phiên làm việc của bạn đã hết hạn.
                     </p>
                     <Link
-                        to="/"
+                        to="/login"
                         className="px-8 py-3 bg-blue-600 text-white font-black text-[11px] uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-900/50 transition-all hover:-translate-y-1"
                     >
-                        Quay lại Trang Chủ
+                        Quay lại Đăng Nhập
                     </Link>
                 </div>
             } />
