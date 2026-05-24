@@ -10,6 +10,9 @@ import HomePage from "../pages/HomePage.jsx";
 import Login from "../pages/LoginPage.jsx";
 import LoginSuccessPage from "../pages/LoginSuccessPage.jsx";
 
+// IMPORT PAGE QUẢN LÝ CAMERA MỚI
+import CameraManagement from "../pages/CameraManagement.jsx";
+
 // Component bảo vệ Route
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
@@ -39,22 +42,7 @@ export default function AppRoutes() {
                 {/* Trang chủ công khai */}
                 <Route path="/" element={<HomePage />} />
 
-                {/* Khu vực Dashboard yêu cầu đăng nhập */}
-                <Route
-                    path="/dashboard"
-                    element={
-                        <ProtectedRoute>
-                            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white w-full">
-                                <h2 className="text-2xl font-black text-green-400 uppercase tracking-wider mb-2">
-                                    KHU VỰC QUẢN LÝ THÔNG TIN CAMERA
-                                </h2>
-                                <p className="text-slate-400 text-sm font-medium">
-                                    Đã xác thực Cookie thành công. Hệ thống đang tải luồng xử lý AI...
-                                </p>
-                            </div>
-                        </ProtectedRoute>
-                    }
-                />
+                <Route path="/camera-management" element={<CameraManagement />}/>
             </Route>
 
             {/* ================= 3. TRANG BÁO LỖI 404 (Không chứa Header & Footer) ================= */}

@@ -21,7 +21,7 @@ const deleteCookie = (name) => {
 };
 
 export const AuthProvider = ({ children }) => {
-    // Khởi tạo state từ localStorage nếu có sẵn
+    // Khởi tạo state từ localStorage nếu có sẵn để tránh giật màn hình khi F5
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem("ppe_user");
         return savedUser ? JSON.parse(savedUser) : null;
@@ -41,15 +41,27 @@ export const AuthProvider = ({ children }) => {
                 id: userId,
                 role: role,
                 fullName: fullName,
-                avatarUrl: avatarUrl
+                avatarUrl: avatarUrl,
+                token: token // 🌟 Đã lưu token vào đây để các component khác lấy ra dùng
             };
 
-            // 🌟 ĐỒNG BỘ VÀO STORAGE Ở ĐÂY
-            setUser(userData);
-            localStorage.setItem("ppe_user", JSON.stringify(userData));
+            // Chỉ cập nhật state nếu dữ liệu thực sự có sự thay đổi để CHẶN VÒNG LẶP RE-RENDER
+            const currentUserStr = localStorage.getItem("ppe_user");
+            const nextUserStr = JSON.stringify(userData);
+
+            if (currentUserStr !== nextUserStr) {
+                setUser(userData);
+                localStorage.setItem("ppe_user", nextUserStr);
+            }
             return true;
+        } else {
+            // Nếu Cookie trống rỗng (User đã logout hoặc hết hạn ở Backend) thì dọn sạch storage
+            if (localStorage.getItem("ppe_user")) {
+                setUser(null);
+                localStorage.removeItem("ppe_user");
+            }
+            return false;
         }
-        return false;
     }, []);
 
     const loginWithCookie = useCallback(() => {
@@ -60,7 +72,7 @@ export const AuthProvider = ({ children }) => {
         if (isSuccess) {
             return Promise.resolve(true);
         } else {
-            return Promise.reject("Không tìm thấy thông tin xác thực");
+            return Promise.reject("Không tìm thấy thông tin xác thực từ hệ thống");
         }
     }, [syncAuthWithCookies]);
 
@@ -72,13 +84,15 @@ export const AuthProvider = ({ children }) => {
         deleteCookie("userRole");
         deleteCookie("userFullName");
         deleteCookie("userAvatarUrl");
+        // Điều hướng thẳng về trang đăng nhập bằng href để reset sạch bộ nhớ ram của React
         window.location.href = "/login";
     };
 
+    // Chạy duy nhất 1 lần khi ứng dụng React khởi tạo (Mounting) để kiểm tra phiên làm việc
     useEffect(() => {
         syncAuthWithCookies();
         setLoading(false);
-    }, [syncAuthWithCookies]);
+    }, []); // Chặn đứng tình trạng gọi lặp lại vô hạn bằng mảng dependency trống
 
     return (
         <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user, loginWithCookie, logout }}>
