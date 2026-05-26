@@ -11,7 +11,6 @@ const CameraManagement = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    // State cho Form (Dùng chung cho cả Thêm và Sửa)
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentCameraId, setCurrentCameraId] = useState(null);
@@ -22,22 +21,9 @@ const CameraManagement = () => {
         isActive: true
     });
 
-    // 🌟 API Base URL: Gọi trực tiếp tới Backend Spring Boot ở port 8080
     const API_BASE_URL = "http://localhost:8080/api/v1/cameras";
 
-    // Hàm lấy token từ dữ liệu ppe_user trong localStorage
-    const getJwtToken = () => {
-        const savedUser = localStorage.getItem("ppe_user");
-        if (savedUser) {
-            const parsed = JSON.parse(savedUser);
-            return parsed.token || "";
-        }
-        return "";
-    };
-
-    // Kích hoạt fetch danh sách camera khi User đã xác thực thành công
     useEffect(() => {
-        // Đợi AuthContext tải xong trạng thái ban đầu để tránh bị điều hướng nhầm
         if (authLoading) return;
 
         if (!isAuthenticated && !currentUser) {
@@ -50,19 +36,18 @@ const CameraManagement = () => {
         }
     }, [currentUser, isAuthenticated, authLoading, navigate]);
 
-    // 1. GET: Lấy danh sách camera theo User ID
     const fetchCameras = async (userId) => {
         setLoading(true);
-        const token = getJwtToken();
+        const token = currentUser?.token || "";
 
         try {
             const response = await fetch(`${API_BASE_URL}/user/${userId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token && { "Authorization": `Bearer ${token}` }) // Đính kèm JWT vào Header
+                    ...(token && { "Authorization": `Bearer ${token}` })
                 },
-                credentials: "include" // Gửi kèm theo Cookie chứa Session/Token sang port 8080
+                credentials: "include"
             });
 
             if (response.status === 401) {
@@ -84,7 +69,6 @@ const CameraManagement = () => {
         }
     };
 
-    // Đóng mở Modal form
     const openModal = (camera = null) => {
         if (camera) {
             setIsEditing(true);
@@ -108,7 +92,6 @@ const CameraManagement = () => {
         setError("");
     };
 
-    // Handle thay đổi input form
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData({
@@ -117,14 +100,13 @@ const CameraManagement = () => {
         });
     };
 
-    // 2. POST / PUT: Xử lý Submit Form
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!currentUser) return;
 
         const url = isEditing ? `${API_BASE_URL}/${currentCameraId}` : API_BASE_URL;
         const method = isEditing ? "PUT" : "POST";
-        const token = getJwtToken();
+        const token = currentUser?.token || "";
 
         const payload = isEditing
             ? { ...formData }
@@ -160,10 +142,9 @@ const CameraManagement = () => {
         }
     };
 
-    // 3. DELETE: Xóa Camera
     const handleDelete = async (id) => {
         if (!window.confirm("Bạn có chắc chắn muốn gỡ bỏ cấu hình camera này?")) return;
-        const token = getJwtToken();
+        const token = currentUser?.token || "";
 
         try {
             const response = await fetch(`${API_BASE_URL}/${id}`, {
@@ -199,13 +180,22 @@ const CameraManagement = () => {
                         <h1 className="dashboard-title">Hệ Thống Quản Lý <span>Camera</span></h1>
                         <p className="dashboard-subtitle">Cấu hình luồng xử lý AI nhận diện đồ bảo hộ lao động cho tài khoản của bạn.</p>
                     </div>
-                    <button className="btn-primary btn-add-camera" onClick={() => openModal()}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="btn-icon">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        Thêm Camera Mới
-                    </button>
+                    <div className="header-action-buttons" style={{ display: "flex", gap: "1rem" }}>
+                        <button className="btn-secondary btn-go-detect" onClick={() => navigate("/detect")} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="btn-icon" style={{ width: "18px", height: "18px" }}>
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            Đến Trang Giám Sát AI
+                        </button>
+                        <button className="btn-primary btn-add-camera" onClick={() => openModal()}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="btn-icon">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Thêm Camera Mới
+                        </button>
+                    </div>
                 </div>
 
                 {(authLoading || loading) && <div className="state-message">Đang tải danh sách mắt camera từ server...</div>}

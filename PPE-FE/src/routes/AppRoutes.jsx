@@ -10,8 +10,9 @@ import HomePage from "../pages/HomePage.jsx";
 import Login from "../pages/LoginPage.jsx";
 import LoginSuccessPage from "../pages/LoginSuccessPage.jsx";
 
-// IMPORT PAGE QUẢN LÝ CAMERA MỚI
+// IMPORT CÁC TRANG CHỨC NĂNG HỆ THỐNG
 import CameraManagement from "../pages/CameraManagement.jsx";
+import DetectPage from "../pages/DetectPage.jsx";
 
 // Component bảo vệ Route
 const ProtectedRoute = ({ children }) => {
@@ -33,19 +34,36 @@ const ProtectedRoute = ({ children }) => {
 export default function AppRoutes() {
     return (
         <Routes>
-            {/* ================= 1. CÁC TRANG CHẠY ĐỘC LẬP (Không chứa Header & Footer) ================= */}
+            {/* ================= 1. CÁC TRANG CHẠY ĐỘC LẬP ================= */}
             <Route path="/login" element={<Login />} />
             <Route path="/login-success" element={<LoginSuccessPage />} />
 
-            {/* ================= 2. PHÂN VÙNG SỬ DỤNG LAYOUT CHUNG (Có Header & Footer) ================= */}
+            {/* ================= 2. PHÂN VÙNG SỬ DỤNG LAYOUT CHUNG ================= */}
             <Route element={<MainLayout />}>
                 {/* Trang chủ công khai */}
                 <Route path="/" element={<HomePage />} />
 
-                <Route path="/camera-management" element={<CameraManagement />}/>
+                {/* Các phân hệ nội bộ yêu cầu bảo mật nghiêm ngặt */}
+                <Route
+                    path="/camera-management"
+                    element={
+                        <ProtectedRoute>
+                            <CameraManagement />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/detect"
+                    element={
+                        <ProtectedRoute>
+                            <DetectPage />
+                        </ProtectedRoute>
+                    }
+                />
             </Route>
 
-            {/* ================= 3. TRANG BÁO LỖI 404 (Không chứa Header & Footer) ================= */}
+            {/* ================= 3. TRANG BÁO LỖI 404 ================= */}
             <Route path="*" element={
                 <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 px-6 text-center text-white">
                     <h1 className="text-9xl font-black text-slate-800 italic tracking-tighter leading-none mb-4 animate-pulse">404</h1>

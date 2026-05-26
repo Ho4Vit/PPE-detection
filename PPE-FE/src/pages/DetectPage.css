@@ -1,0 +1,386 @@
+/* Tổng quan trang cấu trúc layout */
+.detect-page-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #0f172a; /* Slate 900 nền tối chuẩn AI */
+    color: #f8fafc;
+    padding: 2rem;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    box-sizing: border-box;
+}
+
+/* Thanh tiêu đề Header */
+.detect-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.detect-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.detect-title span {
+    color: #38bdf8; /* Xanh Sky làm điểm nhấn AI */
+}
+
+.detect-subtitle {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin: 0.25rem 0 0 0;
+}
+
+/* Badge trạng thái Socket Server */
+.status-server-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.status-server-badge.connected {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.status-server-badge.disconnected {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+/* Thanh cấu hình tham số nhanh */
+.config-card-bar {
+    background-color: #1e293b;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #334155;
+}
+
+.config-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.config-item label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+/* Nút chọn nguồn Toggle */
+.btn-group-toggle {
+    display: flex;
+    background-color: #0f172a;
+    padding: 0.25rem;
+    border-radius: 6px;
+    border: 1px solid #334155;
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.toggle-btn.active {
+    background-color: #38bdf8;
+    color: #0f172a;
+}
+
+/* Select Box chọn camera hệ thống */
+.camera-select {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+    min-width: 250px;
+}
+
+.file-running-tag {
+    font-size: 0.85rem;
+    background-color: rgba(56, 189, 248, 0.1);
+    color: #38bdf8;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+/* Bố cục chính Grid chia đôi màn hình */
+.detect-main-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* Vùng chứa Video Luồng xử lý dữ liệu */
+.video-stream-box {
+    background-color: #020617;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+/* 🟢 CSS QUYẾT ĐỊNH VIỆC TRÙNG KHÍT GIỮA CANVAS VÀ VIDEO 16:9 */
+.video-responsive-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9; /* Ép cứng tỷ lệ màn hình phân giải HD */
+    background-color: #000000;
+    overflow: hidden;
+}
+
+.video-responsive-container video,
+.video-responsive-container canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill; /* Ép giãn phẳng đều cho cả 2 thẻ đè khít lên nhau */
+}
+
+/* Đẩy Canvas nổi lên trên Video để nhìn thấy khung nét vẽ */
+.video-responsive-container canvas {
+    z-index: 2;
+    pointer-events: none; /* Tránh cản trở sự kiện chuột vào video */
+}
+
+/* Thanh điều khiển phụ ở bên phải */
+.side-control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Khối trạng thái cảnh báo khẩn cấp Safe / Danger */
+.alarm-status-card {
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.alarm-status-card .card-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.alarm-status-card .card-value {
+    font-size: 2.2rem;
+    font-weight: 900;
+    margin: 0.5rem 0 0 0;
+    letter-spacing: 1px;
+}
+
+.safe-alert {
+    background-gradient: linear-gradient(135deg, #064e3b, #022c22);
+    background-color: #059669;
+    color: #ffffff;
+    border: 1px solid #10b981;
+}
+
+.danger-alert {
+    background-color: #dc2626;
+    color: #ffffff;
+    border: 1px solid #ef4444;
+    animation: pulse-border 1.5s infinite;
+}
+
+/* Khối hiển thị Danh sách lỗi vi phạm thời gian thực */
+.realtime-log-card {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 1.25rem;
+    min-height: 200px;
+}
+
+.card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #cbd5e1;
+    border-left: 4px solid #38bdf8;
+    padding-left: 8px;
+}
+
+.empty-violation {
+    font-size: 0.85rem;
+    color: #64748b;
+    text-align: center;
+    padding-top: 3rem;
+    line-height: 1.5;
+}
+
+.violation-list-wrapper {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.violation-item-row {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    padding: 0.75rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.warning-icon {
+    font-size: 1rem;
+}
+
+.warning-text {
+    font-size: 0.85rem;
+    color: #fca5a5;
+    line-height: 1.4;
+}
+
+.warning-text strong {
+    color: #ef4444;
+}
+
+/* Khối tóm tắt các quy tắc ràng buộc AI */
+.rules-summary-card {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 1.25rem;
+}
+
+.rule-bullet {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+}
+
+.rule-bullet b {
+    color: #cbd5e1;
+}
+
+/* Animation nhấp nháy đỏ cho vi phạm an toàn */
+@keyframes pulse-border {
+    0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+    70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 1100px) {
+    .detect-main-layout {
+        grid-template-columns: 1fr;
+    }
+    .side-control-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    .rules-summary-card {
+        grid-column: span 2;
+    }
+
+    /* Style cho nút Bật/Tắt Camera hành động */
+    .cam-toggle-action-btn {
+        border: none;
+        padding: 0.5rem 1.2rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .cam-toggle-action-btn.cam-on {
+        background-color: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid #ef4444;
+    }
+
+    .cam-toggle-action-btn.cam-on:hover {
+        background-color: #dc2626;
+        color: #ffffff;
+    }
+
+    .cam-toggle-action-btn.cam-off {
+        background-color: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid #10b981;
+    }
+
+    .cam-toggle-action-btn.cam-off:hover {
+        background-color: #059669;
+        color: #ffffff;
+    }
+
+    /* Lớp phủ màn hình chờ khi tắt Camera */
+    .camera-placeholder-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #020617;
+        z-index: 5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .placeholder-content {
+        padding: 2rem;
+    }
+
+    .placeholder-icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .placeholder-content p {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #cbd5e1;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .placeholder-content small {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+}

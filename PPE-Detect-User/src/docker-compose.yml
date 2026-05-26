@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: ppe_mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: "PPED"
+    ports:
+      - "3307:3306"
+    volumes:
+      - ppe_mysql_data:/var/lib/mysql
+
+volumes:
+  ppe_mysql_data:
+    driver: local
