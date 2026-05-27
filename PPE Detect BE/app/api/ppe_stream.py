@@ -13,22 +13,32 @@ def process_binary_frame(bytes_data: bytes):
     return cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
 @router.websocket("/ws")
-async def ppe_detection_websocket(websocket: WebSocket, camera_id: int = 1):
+async def ppe_detection_websocket(
+    websocket: WebSocket, 
+    camera_id: int = 1,
+    hardhat: int = 1,  # Nhận diện tham số nón từ URL (1: bật quét, 0: bỏ qua)
+    vest: int = 1,     # Nhận diện tham số áo từ URL
+    mask: int = 0      # Nhận diện tham số khẩu trang từ URL
+):
     await websocket.accept()
     tracker = ViolationTracker(camera_id=camera_id, detector_constants=detector)
     
-    # Tạo một hàng đợi chứa tối đa 1 frame mới nhất
+    # Ép dữ liệu integer 0/1 nhận từ Query Parameter thành cấu hình Boolean cho Tracker
+    active_rules = {
+        "hardhat": True if hardhat == 1 else False,
+        "vest": True if vest == 1 else False,
+        "mask": True if mask == 1 else False
+    }
+    
+    print(f"[WebSocket] Thiết lập camera {camera_id} với quy tắc giám sát hoạt động: {active_rules}")
     frame_queue = asyncio.Queue(maxsize=1)
 
-    # TÁC VỤ 1: Luồng nhận ảnh từ Client (Giải phóng băng thông mạng ngay lập tức)
     async def receive_frames():
         try:
             while True:
                 bytes_data = await websocket.receive_bytes()
                 frame = process_binary_frame(bytes_data)
                 if frame is not None:
-                    # Nếu hàng đợi đã đầy (AI chưa xử lý kịp frame cũ), 
-                    # tiến hành xóa frame cũ để nạp frame mới nhất vào (Drop Frame cứu trễ)
                     if frame_queue.full():
                         try:
                             frame_queue.get_nowait()
@@ -38,37 +48,30 @@ async def ppe_detection_websocket(websocket: WebSocket, camera_id: int = 1):
         except WebSocketDisconnect:
             pass
 
-    # TÁC VỤ 2: Luồng chạy AI và phản hồi kết quả
     async def process_frames():
         try:
             while True:
-                # Chờ có frame mới trong Queue
                 frame = await frame_queue.get()
                 
-                # Chạy AI thô độc lập (Chạy trên ThreadPool để không block event loop của FastAPI)
+                # Gọi luồng xử lý AI nhận diện vật thể
                 boxes = await asyncio.to_thread(detector.run_inference, frame)
                 
-                # Tính toán logic nghiệp vụ vi phạm
-                status, violations = tracker.analyze_violations(boxes)
+                # Truyền active_rules nhận được từ giao diện React vào hàm phân tích logic vi phạm
+                status, violations = tracker.analyze_violations(
+                    boxes=boxes, 
+                    current_frame=frame, 
+                    active_rules=active_rules
+                )
                 
-                # Trả kết quả JSON về Client
+                # Trả kết quả JSON đồng bộ trạng thái về giao diện người dùng
                 await websocket.send_json({
                     "status": status,
                     "current_violations": violations,
                     "boxes": boxes
                 })
         except Exception as e:
-            print(f"Error in processing: {e}")
+            print(f"[AI Process Error] Lỗi xử lý khung hình stream: {e}")
 
-    # Chạy song song cả 2 luồng bất đồng bộ
-    receive_task = asyncio.create_task(receive_frames())
-    process_task = asyncio.create_task(process_frames())
-
-    try:
-        # Giữ kết nối mở cho đến khi một trong hai tác vụ bị ngắt hoặc Client đóng tab
-        await asyncio.gather(receive_task, process_task)
-    except WebSocketDisconnect:
-        pass
-    finally:
-        receive_task.cancel()
-        process_task.cancel()
+    # Chạy song song tiến trình nhận ảnh và xử lý AI bất đồng bộ
+    asyncio.create_task(receive_frames())
+    await process_frames()

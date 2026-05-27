@@ -10,15 +10,22 @@ const DetectPage = () => {
     const fileInputRef = useRef(null);
 
     const [videoSource, setVideoSource] = useState("webcam");
-    const [isCamOn, setIsCamOn] = useState(false); // Mặc định ban đầu tắt để người dùng chủ động kích hoạt
+    const [isCamOn, setIsCamOn] = useState(false);
     const [systemStatus, setSystemStatus] = useState("Safe");
-    const [violations, setViolations] = useState([]);
+    const [, setViolations] = useState([]); // Tránh lỗi reference từ canvas
     const [isConnected, setIsConnected] = useState(false);
     const [cameraId, setCameraId] = useState(null);
     const [userCameras, setUserCameras] = useState([]);
     const [selectedFileName, setSelectedFileName] = useState("");
 
-    // ---- TẦNG 1: TẢI DANH SÁCH CAMERA TỪ SPRING BOOT BACKEND ----
+    // ---- ĐIỀU KHIỂN HẠNG MỤC GIÁM SÁT QUA CHECKBOX PREMIUM ----
+    const [checkedRules, setCheckedRules] = useState({
+        hardhat: true, // Mặc định giám sát Nón bảo hộ
+        vest: true,    // Mặc định giám sát Áo phản quang
+        mask: false    // Mặc định tắt giám sát Khẩu trang
+    });
+
+    // Tải danh sách camera từ backend
     useEffect(() => {
         if (authLoading) return;
         if (!isAuthenticated && !currentUser) {
@@ -45,16 +52,15 @@ const DetectPage = () => {
                     }
                 }
             } catch (err) {
-                console.error("Không thể tải danh sách camera thiết bị:", err);
+                console.error("Không thể tải danh sách camera:", err);
             }
         };
 
         if (currentUser?.id) {
             fetchUserCameras();
         }
-    }, [currentUser, isAuthenticated, authLoading, navigate]);
+    }, [currentUser, isAuthenticated, authLoading, navigate, cameraId]);
 
-    // Xử lý khi người dùng chọn nguồn là File Video mẫu
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -68,12 +74,16 @@ const DetectPage = () => {
         }
     };
 
-    // Hàm đổi trạng thái Bật/Tắt Camera
     const handleToggleCamera = () => {
         if (videoSource !== "webcam") {
             setVideoSource("webcam");
         }
         setIsCamOn(!isCamOn);
+    };
+
+    // Hàm xử lý thay đổi checkbox nhanh
+    const toggleRule = (key) => {
+        setCheckedRules(prev => ({ ...prev, [key]: !prev[key] }));
     };
 
     return (
@@ -88,49 +98,39 @@ const DetectPage = () => {
                 </div>
             </header>
 
-            {/* BAR ĐIỀU KHIỂN CẤU HÌNH - TÍCH HỢP NÚT BẬT TẮT CAMERA */}
-            <section className="config-card-bar" style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginBottom: "1.5rem", background: "#1e293b", padding: "1rem", borderRadius: "8px" }}>
-
+            {/* BAR ĐIỀU KHIỂN CẤU HÌNH TỔNG HỢP */}
+            <section className="config-card-bar">
+                {/* CHỌN NGUỒN VÀO */}
                 <div className="config-item">
-                    <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "bold", color: "#94a3b8", fontSize: "0.85rem" }}>CHỌN NGUỒN VIDEO:</label>
-                    <div className="btn-group-toggle" style={{ display: "flex", gap: "0.5rem" }}>
+                    <label className="config-label">CHỌN NGUỒN VIDEO:</label>
+                    <div className="btn-group-toggle">
                         <button type="button" className={`toggle-btn ${videoSource === "webcam" ? "active" : ""}`} onClick={() => { setVideoSource("webcam"); setIsCamOn(false); }}>
                             📷 Webcam Laptop
                         </button>
                         <button type="button" className={`toggle-btn ${videoSource === "file" ? "active" : ""}`} onClick={() => { fileInputRef.current?.click(); }}>
-                            📁 Tải File Video
+                            📁 {selectedFileName ? `File: ${selectedFileName.substring(0, 10)}...` : "Tải File Video"}
                         </button>
                     </div>
                     <input type="file" ref={fileInputRef} accept="video/*" style={{ display: "none" }} onChange={handleFileChange} />
                 </div>
 
-                {/* NÚT BẬT / TẮT CAMERA - LUÔN HIỂN THỊ KHI SOURCE LÀ WEBCAM */}
+                {/* BẬT TẮT CAMERA */}
                 {videoSource === "webcam" && (
                     <div className="config-item">
-                        <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "bold", color: "#94a3b8", fontSize: "0.85rem" }}>TRẠNG THÁI THIẾT BỊ:</label>
+                        <label className="config-label">TRẠNG THÁI THIẾT BỊ:</label>
                         <button
                             type="button"
                             className={`cam-toggle-action-btn ${isCamOn ? "cam-active" : "cam-inactive"}`}
                             onClick={handleToggleCamera}
-                            style={{
-                                padding: "0.55rem 1.2rem",
-                                fontWeight: "bold",
-                                borderRadius: "6px",
-                                cursor: "pointer",
-                                border: "1px solid",
-                                transition: "all 0.2s ease",
-                                backgroundColor: isCamOn ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
-                                color: isCamOn ? "#10b981" : "#ef4444",
-                                borderColor: isCamOn ? "#10b981" : "#ef4444"
-                            }}
                         >
                             {isCamOn ? "🟢 CAMERA ĐANG BẬT (BẤM TẮT)" : "⚫ CAMERA ĐANG TẮT (BẤM BẬT)"}
                         </button>
                     </div>
                 )}
 
+                {/* CHỌN MẮT CAMERA */}
                 <div className="config-item select-box-item" style={{ marginLeft: "auto" }}>
-                    <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "bold", color: "#94a3b8", fontSize: "0.85rem" }}>KẾT NỐI MẮT CAMERA HỆ THỐNG:</label>
+                    <label className="config-label">KẾT NỐI MẮT CAMERA HỆ THỐNG:</label>
                     <select className="camera-select" value={cameraId || ""} onChange={(e) => setCameraId(e.target.value)}>
                         {userCameras.length === 0 ? (
                             <option value="">Không có camera khả dụng</option>
@@ -145,57 +145,80 @@ const DetectPage = () => {
                 </div>
             </section>
 
+            {/* BỐ CỤC CHÍNH */}
             <div className="detect-main-layout">
-                <article className="video-stream-box" style={{ position: "relative", minHeight: "480px", backgroundColor: "#020617", borderRadius: "8px", overflow: "hidden" }}>
+                {/* BÊN TRÁI: KHUNG VIDEO STREAM */}
+                <div className="left-stream-panel">
+                    <article className="video-stream-box">
+                        <PPEVideoCanvas
+                            cameraId={cameraId}
+                            videoSource={videoSource}
+                            isCamOn={isCamOn}
+                            checkedRules={checkedRules}
+                            onStatusChange={setSystemStatus}
+                            onViolationsChange={setViolations}
+                            onServerConnectionChange={setIsConnected}
+                        />
 
-                    {/* KHU VỰC PHÁT LUỒNG VIDEO CHUYÊN DỤNG */}
-                    <PPEVideoCanvas
-                        cameraId={cameraId}
-                        videoSource={videoSource}
-                        isCamOn={isCamOn}
-                        onStatusChange={setSystemStatus}
-                        onViolationsChange={setViolations}
-                        onServerConnectionChange={setIsConnected}
-                    />
+                        {videoSource === "webcam" && !isCamOn && (
+                            <div className="camera-placeholder-overlay">
+                                <span className="placeholder-icon">📷❌</span>
+                                <p className="placeholder-title">Hệ thống camera đang ở trạng thái nghỉ.</p>
+                                <small className="placeholder-desc">Vui lòng nhấn nút "⚫ CAMERA ĐANG TẮT (BẤM BẬT)" phía trên để kích hoạt nhận diện.</small>
+                            </div>
+                        )}
+                    </article>
+                </div>
 
-                    {/* MÀN HÌNH CHỜ THÔNG BÁO NGHỈ KHI TẮT CAMERA */}
-                    {videoSource === "webcam" && !isCamOn && (
-                        <div className="camera-placeholder-overlay" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", backgroundColor: "#020617", color: "#64748b" }}>
-                            <span style={{ fontSize: "3rem", marginBottom: "1rem" }}>📷❌</span>
-                            <p style={{ fontSize: "1.1rem", fontWeight: "bold", color: "#cbd5e1", margin: "0 0 0.5rem 0" }}>Hệ thống camera đang ở trạng thái nghỉ.</p>
-                            <small style={{ color: "#475569" }}>Vui lòng nhấn nút "⚫ CAMERA ĐANG TẮT (BẤM BẬT)" phía trên để kích hoạt nhận diện.</small>
-                        </div>
-                    )}
-                </article>
-
+                {/* BÊN PHẢI: PANEL TRẠNG THÁI & BỘ CHỌN CHECKBOX ĐẸP */}
                 <aside className="side-control-panel">
+                    {/* CARD TRẠNG THÁI AN TOÀN */}
                     <div className={`alarm-status-card ${systemStatus === "Danger" ? "danger-alert" : "safe-alert"}`}>
                         <span className="card-label">TRẠNG THÁI HỆ THỐNG</span>
                         <h2 className="card-value">{systemStatus.toUpperCase()}</h2>
                     </div>
 
-                    <div className="realtime-log-card">
-                        <h3 className="card-title">Vi Phạm Hiện Thời (Real-time Tracking):</h3>
-                        {violations.length === 0 ? (
-                            <div className="empty-violation">Toàn bộ nhân sự đang chấp hành đúng quy định an toàn.</div>
-                        ) : (
-                            <ul className="violation-list-wrapper">
-                                {violations.map((v, idx) => (
-                                    <li key={idx} className="violation-item-row">
-                                        <span className="warning-icon">⚠️</span>
-                                        <span className="warning-text">Cảnh báo vi phạm: <strong>{v}</strong></span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
+                    <div className="visual-selector-card">
+                        <h3 className="card-title">Hạng Mục Giám Sát AI</h3>
+                        <p className="card-subtitle-desc">Bật/tắt các lớp quy tắc để AI quét luồng hình ảnh thời gian thực.</p>
 
-                    <div className="rules-summary-card">
-                        <h3 className="card-title">Tham Số Ràng Buộc AI:</h3>
-                        <div className="rule-bullet">• Chuẩn hóa dữ liệu: <b>JPEG Lossless 1.0 (RGB)</b></div>
-                        <div className="rule-bullet">• Thuật toán chống rung: <b>Multi-Object Track ID Matrix</b></div>
-                        <div className="rule-bullet">• Độ trễ cảnh báo: <b>Kích hoạt Unsafe sau 5s vi phạm liên tục</b></div>
-                        <div className="rule-bullet">• Lưu trữ: <b>Ghi log cơ sở dữ liệu và kết xuất Excel thống kê</b></div>
+                        <div className="premium-checkbox-group">
+                            {/* Khối item 1: Nón */}
+                            <div className={`premium-checkbox-item ${checkedRules.hardhat ? "is-checked" : ""}`} onClick={() => toggleRule("hardhat")}>
+                                <div className="item-icon-box">👷</div>
+                                <div className="item-info">
+                                    <span className="item-name">Nón bảo hộ</span>
+                                    <span className="item-status-tag">{checkedRules.hardhat ? "ĐANG QUÉT" : "BỎ QUA"}</span>
+                                </div>
+                                <div className="custom-tick-box">
+                                    <span className="tick-mark">✓</span>
+                                </div>
+                            </div>
+
+                            {/* Khối item 2: Áo phản quang */}
+                            <div className={`premium-checkbox-item ${checkedRules.vest ? "is-checked" : ""}`} onClick={() => toggleRule("vest")}>
+                                <div className="item-icon-box">🦺</div>
+                                <div className="item-info">
+                                    <span className="item-name">Áo phản quang</span>
+                                    <span className="item-status-tag">{checkedRules.vest ? "ĐANG QUÉT" : "BỎ QUA"}</span>
+                                </div>
+                                <div className="custom-tick-box">
+                                    <span className="tick-mark">✓</span>
+                                </div>
+                            </div>
+
+                            {/* Khối item 3: Khẩu trang */}
+                            <div className={`premium-checkbox-item ${checkedRules.mask ? "is-checked" : ""}`} onClick={() => toggleRule("mask")}>
+                                <div className="item-icon-box">😷</div>
+                                <div className="item-info">
+                                    <span className="item-name">Khẩu trang</span>
+                                    <span className="item-status-tag">{checkedRules.mask ? "ĐANG QUÉT" : "BỎ QUA"}</span>
+                                </div>
+                                <div className="custom-tick-box">
+                                    <span className="tick-mark">✓</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </aside>
             </div>

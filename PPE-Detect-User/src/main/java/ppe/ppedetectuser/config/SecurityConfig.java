@@ -51,7 +51,7 @@ public class SecurityConfig {
                                 "/login/oauth2/**"
                         ).permitAll()
                         .requestMatchers("/api/auth/google/login").permitAll()
-                        .requestMatchers("/api/v1/violations/**").permitAll()
+                        .requestMatchers("/api/v1/violations/report").permitAll()
                         .requestMatchers("/api/v1/auth/logout").authenticated()
 
                         .anyRequest().authenticated()

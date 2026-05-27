@@ -1,4 +1,6 @@
-/* Tổng quan trang cấu trúc layout */
+/* ==========================================================================
+   TỔNG QUAN TRANG CẤU TRÚC LAYOUT
+   ========================================================================== */
 .detect-page-wrapper {
     width: 100%;
     min-height: 100vh;
@@ -56,7 +58,9 @@
     border: 1px solid #ef4444;
 }
 
-/* Thanh cấu hình tham số nhanh */
+/* ==========================================================================
+   THANH CẤU HÌNH THAM SỐ NHANH (CONFIG BAR)
+   ========================================================================== */
 .config-card-bar {
     background-color: #1e293b;
     border-radius: 8px;
@@ -66,15 +70,17 @@
     gap: 2.5rem;
     margin-bottom: 1.5rem;
     border: 1px solid #334155;
+    flex-wrap: wrap;
 }
 
 .config-item {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
 }
 
-.config-item label {
+.config-label {
     font-size: 0.8rem;
     font-weight: 700;
     color: #94a3b8;
@@ -102,6 +108,10 @@
     transition: all 0.2s;
 }
 
+.toggle-btn:hover {
+    color: #ffffff;
+}
+
 .toggle-btn.active {
     background-color: #38bdf8;
     color: #0f172a;
@@ -120,16 +130,32 @@
     min-width: 250px;
 }
 
-.file-running-tag {
+/* Style nút Bật/Tắt Camera hành động */
+.cam-toggle-action-btn {
+    border: 1px solid;
+    padding: 0.55rem 1.2rem;
     font-size: 0.85rem;
-    background-color: rgba(56, 189, 248, 0.1);
-    color: #38bdf8;
-    padding: 0.5rem 1rem;
+    font-weight: 700;
     border-radius: 6px;
-    border: 1px solid rgba(56, 189, 248, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
 }
 
-/* Bố cục chính Grid chia đôi màn hình */
+.cam-toggle-action-btn.cam-active {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border-color: #10b981;
+}
+
+.cam-toggle-action-btn.cam-inactive {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+/* ==========================================================================
+   BỐ CỤC CHÍNH GRID CHIA ĐÔI MÀN HÌNH
+   ========================================================================== */
 .detect-main-layout {
     display: grid;
     grid-template-columns: 1fr 360px;
@@ -138,7 +164,14 @@
 }
 
 /* Vùng chứa Video Luồng xử lý dữ liệu */
+.left-stream-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
 .video-stream-box {
+    position: relative;
     background-color: #020617;
     border-radius: 12px;
     border: 1px solid #334155;
@@ -146,11 +179,10 @@
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
-/* 🟢 CSS QUYẾT ĐỊNH VIỆC TRÙNG KHÍT GIỮA CANVAS VÀ VIDEO 16:9 */
 .video-responsive-container {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9; /* Ép cứng tỷ lệ màn hình phân giải HD */
+    aspect-ratio: 16 / 9;
     background-color: #000000;
     overflow: hidden;
 }
@@ -162,16 +194,51 @@
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: fill; /* Ép giãn phẳng đều cho cả 2 thẻ đè khít lên nhau */
+    object-fit: fill;
 }
 
-/* Đẩy Canvas nổi lên trên Video để nhìn thấy khung nét vẽ */
 .video-responsive-container canvas {
     z-index: 2;
-    pointer-events: none; /* Tránh cản trở sự kiện chuột vào video */
+    pointer-events: none;
 }
 
-/* Thanh điều khiển phụ ở bên phải */
+/* Lớp phủ màn hình chờ khi tắt Camera */
+.camera-placeholder-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #020617;
+    z-index: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+.placeholder-icon {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.placeholder-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin: 0 0 0.5rem 0;
+}
+
+.placeholder-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* ==========================================================================
+   PANEL TRẠNG THÁI VÀ BỘ CHỌN CHECKBOX (BÊN PHẢI)
+   ========================================================================== */
 .side-control-panel {
     display: flex;
     flex-direction: column;
@@ -201,106 +268,165 @@
 }
 
 .safe-alert {
-    background-gradient: linear-gradient(135deg, #064e3b, #022c22);
-    background-color: #059669;
-    color: #ffffff;
+    background: linear-gradient(135deg, #064e3b, #022c22);
+    color: #34d399;
     border: 1px solid #10b981;
 }
 
 .danger-alert {
-    background-color: #dc2626;
-    color: #ffffff;
+    background: linear-gradient(135deg, #7f1d1d, #450a0a);
+    color: #f87171;
     border: 1px solid #ef4444;
-    animation: pulse-border 1.5s infinite;
+    animation: pulse-border-glow 1.5s infinite alternate;
 }
 
-/* Khối hiển thị Danh sách lỗi vi phạm thời gian thực */
-.realtime-log-card {
+/* --- KHỐI BỘ CHỌN CHECKBOX ĐƯỢC LÀM ĐẸP CHUYÊN NGHIỆP --- */
+.visual-selector-card {
     background-color: #1e293b;
     border: 1px solid #334155;
     border-radius: 10px;
     padding: 1.25rem;
-    min-height: 200px;
 }
 
 .card-title {
     font-size: 0.95rem;
     font-weight: 700;
     margin-top: 0;
-    margin-bottom: 1rem;
+    margin-bottom: 0.4rem;
     color: #cbd5e1;
     border-left: 4px solid #38bdf8;
     padding-left: 8px;
 }
 
-.empty-violation {
-    font-size: 0.85rem;
+.card-subtitle-desc {
+    font-size: 0.78rem;
     color: #64748b;
-    text-align: center;
-    padding-top: 3rem;
-    line-height: 1.5;
+    margin: 0 0 1.2rem 0;
+    line-height: 1.4;
 }
 
-.violation-list-wrapper {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+/* Container danh sách hộp chọn */
+.premium-checkbox-group {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
-.violation-item-row {
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.25);
-    padding: 0.75rem;
-    border-radius: 6px;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-}
-
-.warning-icon {
-    font-size: 1rem;
-}
-
-.warning-text {
-    font-size: 0.85rem;
-    color: #fca5a5;
-    line-height: 1.4;
-}
-
-.warning-text strong {
-    color: #ef4444;
-}
-
-/* Khối tóm tắt các quy tắc ràng buộc AI */
-.rules-summary-card {
-    background-color: #1e293b;
+/* Khung bọc từng thẻ Checkbox lớn */
+.premium-checkbox-item {
+    background-color: #0f172a;
     border: 1px solid #334155;
-    border-radius: 10px;
-    padding: 1.25rem;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.rule-bullet {
-    font-size: 0.8rem;
-    color: #94a3b8;
-    margin-bottom: 0.6rem;
-    line-height: 1.4;
+.premium-checkbox-item:hover {
+    border-color: #475569;
+    background-color: #131e35;
+    transform: translateX(3px); /* Hiệu ứng đẩy nhẹ sang phải khi hover */
 }
 
-.rule-bullet b {
-    color: #cbd5e1;
+/* Ô tròn chứa Emoji đại diện */
+.item-icon-box {
+    font-size: 1.4rem;
+    margin-right: 0.85rem;
+    background-color: #1e293b;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid #334155;
 }
 
-/* Animation nhấp nháy đỏ cho vi phạm an toàn */
-@keyframes pulse-border {
-    0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
-    70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+/* Thông tin nhãn văn bản bên trong */
+.item-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
-/* Responsive cho màn hình nhỏ */
+.item-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+.item-status-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-top: 0.15rem;
+    letter-spacing: 0.5px;
+}
+
+/* Ô tick box bên phải thiết kế thủ công */
+.custom-tick-box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #475569;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.tick-mark {
+    font-size: 0.75rem;
+    color: transparent;
+    font-weight: bold;
+    transform: scale(0);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- ĐỊNH NGHĨA TRẠNG THÁI KHI ĐƯỢC TÍCH CHỌN (ACTIVE) --- */
+.premium-checkbox-item.is-checked {
+    border-color: #10b981; /* Đổi màu viền Emerald */
+    background-color: rgba(16, 185, 129, 0.04);
+}
+
+.premium-checkbox-item.is-checked:hover {
+    background-color: rgba(16, 185, 129, 0.08);
+}
+
+.premium-checkbox-item.is-checked .item-icon-box {
+    border-color: rgba(16, 185, 129, 0.3);
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+.premium-checkbox-item.is-checked .item-status-tag {
+    color: #10b981; /* Đổi chữ sang màu xanh */
+}
+
+.premium-checkbox-item.is-checked .custom-tick-box {
+    background-color: #10b981;
+    border-color: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}
+
+.premium-checkbox-item.is-checked .tick-mark {
+    color: #0f172a; /* Dấu tick đen/tối trên nền xanh */
+    transform: scale(1);
+}
+
+/* ==========================================================================
+   ANIMATION EFFECTS
+   ========================================================================== */
+@keyframes pulse-border-glow {
+    0% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.4); }
+    100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.7); }
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (MÀN HÌNH NHỎ)
+   ========================================================================== */
 @media (max-width: 1100px) {
     .detect-main-layout {
         grid-template-columns: 1fr;
@@ -310,77 +436,7 @@
         grid-template-columns: 1fr 1fr;
         gap: 1rem;
     }
-    .rules-summary-card {
-        grid-column: span 2;
-    }
-
-    /* Style cho nút Bật/Tắt Camera hành động */
-    .cam-toggle-action-btn {
-        border: none;
-        padding: 0.5rem 1.2rem;
-        font-size: 0.85rem;
-        font-weight: 700;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .cam-toggle-action-btn.cam-on {
-        background-color: rgba(239, 68, 68, 0.2);
-        color: #ef4444;
-        border: 1px solid #ef4444;
-    }
-
-    .cam-toggle-action-btn.cam-on:hover {
-        background-color: #dc2626;
-        color: #ffffff;
-    }
-
-    .cam-toggle-action-btn.cam-off {
-        background-color: rgba(16, 185, 129, 0.2);
-        color: #10b981;
-        border: 1px solid #10b981;
-    }
-
-    .cam-toggle-action-btn.cam-off:hover {
-        background-color: #059669;
-        color: #ffffff;
-    }
-
-    /* Lớp phủ màn hình chờ khi tắt Camera */
-    .camera-placeholder-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: #020617;
-        z-index: 5;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-
-    .placeholder-content {
-        padding: 2rem;
-    }
-
-    .placeholder-icon {
-        font-size: 3rem;
-        display: block;
-        margin-bottom: 1rem;
-    }
-
-    .placeholder-content p {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #cbd5e1;
-        margin: 0 0 0.5rem 0;
-    }
-
-    .placeholder-content small {
-        font-size: 0.85rem;
-        color: #64748b;
+    .visual-selector-card {
+        grid-column: span 1;
     }
 }
