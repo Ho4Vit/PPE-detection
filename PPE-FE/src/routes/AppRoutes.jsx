@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 // LAYOUT
 import MainLayout from "../components/layouts/MainLayout.jsx";
 
-// PAGES HIỆN CÓ
+// PAGES
 import HomePage from "../pages/HomePage.jsx";
 import Login from "../pages/LoginPage.jsx";
 import LoginSuccessPage from "../pages/LoginSuccessPage.jsx";
@@ -13,6 +13,7 @@ import LoginSuccessPage from "../pages/LoginSuccessPage.jsx";
 // IMPORT CÁC TRANG CHỨC NĂNG HỆ THỐNG
 import CameraManagement from "../pages/CameraManagement.jsx";
 import DetectPage from "../pages/DetectPage.jsx";
+import CameraViolationPage from "../pages/CameraViolationPage.jsx"; // 🟢 Thêm mới trang xem vi phạm
 
 // Component bảo vệ Route
 const ProtectedRoute = ({ children }) => {
@@ -58,6 +59,16 @@ export default function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <DetectPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* 🟢 ROUTE MỚI: Trang xem nhật ký vi phạm theo từng camera */}
+                <Route
+                    path="/violations"
+                    element={
+                        <ProtectedRoute>
+                            <CameraViolationPage />
                         </ProtectedRoute>
                     }
                 />
