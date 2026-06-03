@@ -14,6 +14,9 @@ const CameraManagement = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentCameraId, setCurrentCameraId] = useState(null);
+
+    // Thêm loại camera: "webcam" hoặc "rtsp"
+    const [camType, setCamType] = useState("webcam");
     const [formData, setFormData] = useState({
         cameraName: "",
         cameraUrl: "",
@@ -51,7 +54,7 @@ const CameraManagement = () => {
             });
 
             if (response.status === 401) {
-                setError("Phiên đăng nhập hết hạn hoặc không hợp lệ. Đang chuyển hướng...");
+                setError("Session expired. Redirecting to login...");
                 setTimeout(() => navigate("/login"), 2000);
                 return;
             }
@@ -60,10 +63,10 @@ const CameraManagement = () => {
             if (response.ok) {
                 setCameras(result.data || []);
             } else {
-                setError(result.message || "Không thể tải danh sách camera.");
+                setError(result.message || "Failed to load camera list.");
             }
         } catch (err) {
-            setError("Lỗi kết nối đến máy chủ hệ thống.");
+            setError("Server connection error.");
         } finally {
             setLoading(false);
         }
@@ -73,15 +76,21 @@ const CameraManagement = () => {
         if (camera) {
             setIsEditing(true);
             setCurrentCameraId(camera.id);
+
+            // Kiểm tra xem camera hiện tại là loại nào
+            const isWebcam = camera.cameraUrl === "0" || camera.cameraUrl === 0;
+            setCamType(isWebcam ? "webcam" : "rtsp");
+
             setFormData({
                 cameraName: camera.cameraName,
-                cameraUrl: camera.cameraUrl,
+                cameraUrl: isWebcam ? "" : camera.cameraUrl,
                 location: camera.location,
                 isActive: camera.isActive
             });
         } else {
             setIsEditing(false);
             setCurrentCameraId(null);
+            setCamType("webcam");
             setFormData({ cameraName: "", cameraUrl: "", location: "", isActive: true });
         }
         setIsModalOpen(true);
@@ -108,9 +117,12 @@ const CameraManagement = () => {
         const method = isEditing ? "PUT" : "POST";
         const token = currentUser?.token || "";
 
+        // Nếu chọn webcam thì gán cứng url gửi lên server là "0"
+        const finalCameraUrl = camType === "webcam" ? "0" : formData.cameraUrl;
+
         const payload = isEditing
-            ? { ...formData }
-            : { ...formData, userId: currentUser.id };
+            ? { ...formData, cameraUrl: finalCameraUrl }
+            : { ...formData, cameraUrl: finalCameraUrl, userId: currentUser.id };
 
         try {
             const response = await fetch(url, {
@@ -124,7 +136,7 @@ const CameraManagement = () => {
             });
 
             if (response.status === 401) {
-                alert("Phiên làm việc đã hết hạn, vui lòng đăng nhập lại.");
+                alert("Session expired. Please log in again.");
                 navigate("/login");
                 return;
             }
@@ -135,15 +147,15 @@ const CameraManagement = () => {
                 closeModal();
                 fetchCameras(currentUser.id);
             } else {
-                setError(result.message || "Xử lý yêu cầu thất bại.");
+                setError(result.message || "Action failed.");
             }
         } catch (err) {
-            setError("Lỗi hệ thống khi gửi dữ liệu.");
+            setError("System error while saving data.");
         }
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Bạn có chắc chắn muốn gỡ bỏ cấu hình camera này?")) return;
+        if (!window.confirm("Are you sure you want to remove this camera?")) return;
         const token = currentUser?.token || "";
 
         try {
@@ -156,7 +168,7 @@ const CameraManagement = () => {
             });
 
             if (response.status === 401) {
-                alert("Phiên làm việc đã hết hạn, vui lòng đăng nhập lại.");
+                alert("Session expired. Please log in again.");
                 navigate("/login");
                 return;
             }
@@ -165,147 +177,223 @@ const CameraManagement = () => {
                 fetchCameras(currentUser.id);
             } else {
                 const result = await response.json();
-                alert(result.message || "Không thể xóa camera.");
+                alert(result.message || "Cannot delete camera.");
             }
         } catch (err) {
-            alert("Lỗi kết nối khi thực hiện xóa.");
+            alert("Connection error during deletion.");
         }
     };
 
     return (
-        <div className="camera-page-wrapper" style={{ width: "100%", padding: "2rem" }}>
-            <main className="camera-container">
-                <div className="dashboard-header">
+        <div className="camera-management-wrapper">
+            <div className="cyber-grid-overlay"></div>
+            <div className="ambient-cyan-glow"></div>
+
+            <main className="cam-mgmt-container">
+                {/* HEADER CONTROL PANEL */}
+                <header className="cam-mgmt-header">
                     <div>
-                        <h1 className="dashboard-title">Hệ Thống Quản Lý <span>Camera</span></h1>
-                        <p className="dashboard-subtitle">Cấu hình luồng xử lý AI nhận diện đồ bảo hộ lao động cho tài khoản của bạn.</p>
+                        <span className="tech-tag-sub">CAMERA INFRASTRUCTURE</span>
+                        <h1 className="cam-mgmt-title">Camera Management</h1>
+                        <p className="cam-mgmt-subtitle">Manage video streams and local webcams connected to your AI monitoring system.</p>
                     </div>
-                    <div className="header-action-buttons" style={{ display: "flex", gap: "1rem" }}>
-                        <button className="btn-secondary btn-go-detect" onClick={() => navigate("/detect")} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="btn-icon" style={{ width: "18px", height: "18px" }}>
+                    <div className="cam-action-cluster">
+                        <button className="btn-cyber-nav" onClick={() => navigate("/detect")}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="btn-icon">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            Đến Trang Giám Sát AI
+                            Go to AI Monitor
                         </button>
-                        <button className="btn-primary btn-add-camera" onClick={() => openModal()}>
+                        <button className="btn-cyber-primary" onClick={() => openModal()}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="btn-icon">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
-                            Thêm Camera Mới
+                            Add New Camera
                         </button>
                     </div>
-                </div>
+                </header>
 
-                {(authLoading || loading) && <div className="state-message">Đang tải danh sách mắt camera từ server...</div>}
-                {error && !isModalOpen && <div className="state-message error-message">{error}</div>}
-
-                {!loading && cameras.length === 0 && (
-                    <div className="empty-state">
-                        <p>Tài khoản chưa cấu hình mắt camera nào. Vui lòng bấm "Thêm Camera Mới" để bắt đầu thiết lập.</p>
+                {/* STATUS BOXES */}
+                {(authLoading || loading) && (
+                    <div className="cyber-state-box loading">
+                        <span className="spinner-radar"></span>
+                        Loading device configurations from database...
+                    </div>
+                )}
+                {error && !isModalOpen && (
+                    <div className="cyber-state-box error">
+                        ⚠️ Error: {error}
                     </div>
                 )}
 
-                <div className="camera-grid">
-                    {cameras.map((camera) => (
-                        <div key={camera.id} className={`camera-card-item ${camera.isActive ? "active" : "inactive"}`}>
-                            <div className="camera-card-header">
-                                <div className="camera-icon-bg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                                        <circle cx="12" cy="13" r="4"/>
-                                    </svg>
-                                </div>
-                                <span className={`status-badge ${camera.isActive ? "safe" : "danger"}`}>
-                                    {camera.isActive ? "Đang chạy" : "Tạm dừng"}
-                                </span>
-                            </div>
+                {!loading && cameras.length === 0 && (
+                    <div className="cyber-empty-panel">
+                        <div className="empty-cyber-icon">📡</div>
+                        <p className="empty-title">No Cameras Found</p>
+                        <p className="empty-desc">You haven't added any cameras yet. Create a connection node to start running real-time AI analytics.</p>
+                        <button className="btn-cyber-outline" onClick={() => openModal()}>Add First Camera</button>
+                    </div>
+                )}
 
-                            <div className="camera-card-body">
-                                <h3 className="camera-name">{camera.cameraName}</h3>
-                                <p className="camera-info">
-                                    <strong>Vị trí:</strong> {camera.location || "Chưa xác định"}
-                                </p>
-                                <div className="camera-stream-url">
-                                    <code>{camera.cameraUrl}</code>
+                {/* THE GRID CARD LIST */}
+                <div className="cyber-camera-grid">
+                    {cameras.map((camera) => {
+                        const isWebcam = camera.cameraUrl === "0" || camera.cameraUrl === 0;
+                        return (
+                            <article key={camera.id} className={`cyber-cam-card ${camera.isActive ? "node-active" : "node-suspended"}`}>
+                                <div className="card-top-boundary">
+                                    <div className="node-hardware-id">
+                                        <span className="hardware-tag">ID: #{String(camera.id).padStart(3, '0')}</span>
+                                    </div>
+                                    <span className={`node-status-chip ${camera.isActive ? "online" : "offline"}`}>
+                                        {camera.isActive ? "● Active" : "○ Inactive"}
+                                    </span>
                                 </div>
-                            </div>
 
-                            <div className="camera-card-actions">
-                                <button className="btn-action-edit" onClick={() => openModal(camera)}>
-                                    Sửa Cấu Hình
-                                </button>
-                                <button className="btn-action-delete" onClick={() => handleDelete(camera.id)}>
-                                    Gỡ Bỏ
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                                <div className="card-mid-telemetry">
+                                    <div className="hardware-icon-wrapper">
+                                        {isWebcam ? (
+                                            <span className="type-emoticon">💻</span>
+                                        ) : (
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="svg-cam">
+                                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                                <circle cx="12" cy="13" r="4"/>
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <div className="telemetry-details">
+                                        <h3 className="node-title-name">{camera.cameraName}</h3>
+                                        <div className="telemetry-meta">
+                                            <span className="meta-label">Location:</span>
+                                            <span className="meta-value">{camera.location || "Not specified"}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="card-bottom-routing">
+                                    <label className="routing-lbl">Connection Path / URL</label>
+                                    <div className="routing-code-block">
+                                        {isWebcam ? (
+                                            <span className="webcam-badge-tag">Local Station Webcam</span>
+                                        ) : (
+                                            <code>{camera.cameraUrl}</code>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="card-action-footer">
+                                    <button className="btn-node-edit" onClick={() => openModal(camera)}>
+                                        Edit
+                                    </button>
+                                    <button className="btn-node-delete" onClick={() => handleDelete(camera.id)}>
+                                        Delete
+                                    </button>
+                                </div>
+                            </article>
+                        );
+                    })}
                 </div>
             </main>
 
+            {/* MANAGEMENT MODAL OVERLAY */}
             {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h2>{isEditing ? "Cập Nhật Cấu Hình Camera" : "Thêm Mới Mắt Camera"}</h2>
-                            <button className="btn-close-modal" onClick={closeModal}>&times;</button>
+                <div className="cyber-modal-overlay">
+                    <div className="cyber-modal-container">
+                        <div className="cyber-modal-header">
+                            <div>
+                                <span className="tech-tag-sub">DEVICE CONFIGURATION</span>
+                                <h2 className="modal-headline">{isEditing ? "Edit Camera Node" : "Register New Camera"}</h2>
+                            </div>
+                            <button className="btn-cyber-close" onClick={closeModal}>&times;</button>
                         </div>
 
-                        {error && <p className="modal-error">{error}</p>}
+                        {error && <div className="modal-cyber-error">⚠️ {error}</div>}
 
-                        <form onSubmit={handleSubmit} className="modal-form">
-                            <div className="form-group">
-                                <label>Tên Gợi Nhớ Camera</label>
+                        <form onSubmit={handleSubmit} className="cyber-modal-form">
+                            {/* CHỌN NHANH LOẠI CAMERA */}
+                            <div className="cyber-form-group">
+                                <label className="cyber-form-label">Select Device Type</label>
+                                <div className="cam-type-selector">
+                                    <button
+                                        type="button"
+                                        className={`type-select-btn ${camType === "webcam" ? "selected" : ""}`}
+                                        onClick={() => setCamType("webcam")}
+                                    >
+                                        💻 Local Webcam
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`type-select-btn ${camType === "rtsp" ? "selected" : ""}`}
+                                        onClick={() => setCamType("rtsp")}
+                                    >
+                                        🌐 IP Camera (RTSP)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="cyber-form-group">
+                                <label className="cyber-form-label">Camera Title / Name</label>
                                 <input
                                     type="text"
                                     name="cameraName"
+                                    className="cyber-form-input"
                                     value={formData.cameraName}
                                     onChange={handleInputChange}
-                                    placeholder="Ví dụ: Camera Phân Xưởng Hàn 01"
+                                    placeholder="e.g. Main Production Line Cam"
                                     required
                                 />
                             </div>
 
-                            <div className="form-group">
-                                <label>Đường Dẫn Luồng (RTSP URL / Webcam Index)</label>
-                                <input
-                                    type="text"
-                                    name="cameraUrl"
-                                    value={formData.cameraUrl}
-                                    onChange={handleInputChange}
-                                    placeholder="Ví dụ: rtsp://admin:12345@192.168.1.100:554 hoặc 0 (Webcam)"
-                                    required
-                                />
-                            </div>
+                            {/* CHỈ HIỆN INPUT NÀY NẾU CHỌN LOẠI CAMERA LÀ RTSP */}
+                            {camType === "rtsp" && (
+                                <div className="cyber-form-group">
+                                    <label className="cyber-form-label">RTSP Stream Link URL</label>
+                                    <input
+                                        type="text"
+                                        name="cameraUrl"
+                                        className="cyber-form-input"
+                                        value={formData.cameraUrl}
+                                        onChange={handleInputChange}
+                                        placeholder="rtsp://admin:password@192.168.1.50:554/stream"
+                                        required
+                                    />
+                                </div>
+                            )}
 
-                            <div className="form-group">
-                                <label>Vị Trí Lắp Đặt</label>
+                            <div className="cyber-form-group">
+                                <label className="cyber-form-label">Installation Location</label>
                                 <input
                                     type="text"
                                     name="location"
+                                    className="cyber-form-input"
                                     value={formData.location}
                                     onChange={handleInputChange}
-                                    placeholder="Ví dụ: Cổng chính ra vào nhà máy"
+                                    placeholder="e.g. Factory Entrance Gate A"
                                     required
                                 />
                             </div>
 
-                            <div className="form-group checkbox-group">
-                                <input
-                                    type="checkbox"
-                                    id="isActive"
-                                    name="isActive"
-                                    checked={formData.isActive}
-                                    onChange={handleInputChange}
-                                />
-                                <label htmlFor="isActive">Kích hoạt luồng truyền ngay lập tức cho AI YOLOv8</label>
+                            <div className="cyber-form-group checkbox-cyber-toggle">
+                                <label className="cyber-switch">
+                                    <input
+                                        type="checkbox"
+                                        name="isActive"
+                                        checked={formData.isActive}
+                                        onChange={handleInputChange}
+                                    />
+                                    <span className="cyber-slider"></span>
+                                </label>
+                                <div className="checkbox-labels">
+                                    <span className="chk-title">Enable Stream Node Immediately</span>
+                                    <span className="chk-desc">Allow YOLOv8 model to pull frame structures right away.</span>
+                                </div>
                             </div>
 
-                            <div className="modal-actions">
-                                <button type="button" className="btn-secondary" onClick={closeModal}>Hủy</button>
-                                <button type="submit" className="btn-primary">{isEditing ? "Cập Nhật" : "Khởi Tạo"}</button>
+                            <div className="cyber-modal-footer">
+                                <button type="button" className="btn-cyber-cancel" onClick={closeModal}>Cancel</button>
+                                <button type="submit" className="btn-cyber-submit">{isEditing ? "Save Changes" : "Create Node"}</button>
                             </div>
                         </form>
                     </div>

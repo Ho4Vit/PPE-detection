@@ -1,135 +1,170 @@
 import React from "react";
-import { useNavigate } from "react-router-dom"; // Dùng để chuyển trang nếu có React Router
-import "./HomePage.css"; // Import file CSS thuần
+import { useNavigate } from "react-router-dom";
+import "./HomePage.css";
 
 const HomePage = () => {
     const navigate = useNavigate();
 
     const handleGetStarted = () => {
-        navigate("/login"); // Chuyển hướng sang trang đăng nhập của bạn
+        navigate("/login");
     };
 
     return (
-        <div className="home-page-wrapper">
-
-            {/* Navigation Bar */}
-            <nav className="navbar">
-                <div className="nav-logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-                        <path d="m9 12 2 2 4-4" />
-                    </svg>
-                    <span>PPE Detector</span>
-                </div>
-                <button className="nav-btn" onClick={handleGetStarted}>Dashboard</button>
-            </nav>
+        <div className="intense-landing">
+            {/* Background Architecture */}
+            <div className="cyber-grid"></div>
+            <div className="ambient-glow cyan"></div>
+            <div className="ambient-glow orange"></div>
 
             {/* Hero Section */}
-            <header className="hero-section">
-                <div className="hero-content">
-                    <span className="hero-tag">YOLOv8 & Computer Vision</span>
-                    <h1 className="hero-title">
-                        Giám Sát An Toàn <span>Lao Động</span> Thời Gian Thực
+            <header className="intense-hero">
+                <div className="hero-left">
+                    <div className="status-badge">
+                        <span className="badge-dot"></span>
+                        <span className="badge-text">AI Workplace Safety Platform Active</span>
+                    </div>
+                    <h1 className="hero-main-title">
+                        Transform Existing Cameras <br />
+                        into <span className="text-gradient">AI-Powered Ecosystems</span> <br />
+                        for Labor Protection
                     </h1>
-                    <p className="hero-desc">
-                        Giải pháp ứng dụng trí tuệ nhân tạo tự động phát hiện vi phạm trang bị bảo hộ (Mũ, Áo phản quang, Giày) thông qua hệ thống Camera giám sát thông minh.
+                    <p className="hero-sub-desc">
+                        An advanced computer vision platform analyzing video streams in real-time.
+                        Automate your PPE checklists at facility scale to mitigate operational risks,
+                        protect workforce health, and secure seamless data compliance.
                     </p>
-                    <div className="hero-actions">
-                        <button className="btn-primary" onClick={handleGetStarted}>Bắt Đầu Ngay</button>
+                    <div className="hero-buttons">
+                        <button className="btn-primary-intense" onClick={handleGetStarted}>
+                            Explore Dashboard
+                            <span className="action-arrow">→</span>
+                        </button>
                     </div>
                 </div>
 
-                {/* Khung mô phỏng luồng AI Terminal */}
-                <div className="hero-image-container">
-                    <div className="mockup-window">
-                        <div className="mockup-header">
-                            <div className="dot"></div>
-                            <div className="dot"></div>
-                            <div className="dot"></div>
+                {/* Right Area: Intenseeye Real-time Camera HUD Simulation */}
+                <div className="hero-right">
+                    <div className="video-mockup-wrapper">
+                        <div className="scanner-line"></div>
+                        <div className="camera-overlay-ui">
+                            <span className="cam-label">CAM_02 // WAREHOUSE_ZONE_B</span>
+                            <span className="cam-fps">FPS: 30.0</span>
+                            <div className="rec-indicator">
+                                <span className="rec-dot"></span>LIVE
+                            </div>
                         </div>
-                        <div className="mockup-body">
-                            <p>{"[AI_SERVICE] Loading YOLOv8 weights..."}</p>
-                            <p style={{ color: '#22c55e' }}>{"[CAMERA_01] Connected to Stream..."}</p>
-                            <p style={{ color: '#eab308' }}>{"[DETECTED] Person - Missing Helmet"}</p>
-                            <p style={{ color: '#ef4444' }}>{"[ALERT] Unsafe state active (> 5s)"}</p>
-                            <p style={{ color: '#ffffff' }}>{"[LOG] Violation logged -> Saving statistic"}</p>
+
+                        {/* Simulated CCTV Stream Viewport */}
+                        <div className="simulated-stream">
+                            <div className="matrix-bg"></div>
+
+                            {/* Forklift Zone Restriction Overlay (From Reference Image) */}
+                            <div className="forklift-danger-zone"></div>
+
+                            {/* Worker Bounding box & Skeleton simulation */}
+                            <div className="simulated-worker-box">
+                                <span className="box-label danger">Worker ID: 2</span>
+
+                                {/* Inner PPE Checklist Overlay Panel */}
+                                <div className="ppe-checklist-overlay">
+                                    <div className="checklist-header">Confidence: 93%</div>
+                                    <div className="checklist-sub">Equipped PPEs:</div>
+                                    <div className="check-item fail">✗ Hard Hat</div>
+                                    <div className="check-item ok">✓ Reflective Vest</div>
+                                    <div className="check-item fail">✗ Mask</div>
+                                </div>
+
+                                {/* 3D Polygon Solid Body Mesh Mapping */}
+                                <svg className="simulated-3d-body" viewBox="0 0 120 220">
+                                    {/* 3D Poly Head mesh */}
+                                    <polygon points="60,26 48,36 48,50 60,58 72,50 72,36" fill="#f43f5e" opacity="0.3" stroke="#f43f5e" strokeWidth="1" />
+                                    {/* Neck */}
+                                    <polygon points="56,58 64,58 64,66 56,66" fill="#f43f5e" opacity="0.4" />
+                                    {/* Bulky Upper Torso (Wearing Reflective Vest) */}
+                                    <polygon points="32,66 88,66 94,130 26,130" fill="#f97316" opacity="0.45" stroke="#f97316" strokeWidth="1.5" />
+                                    {/* Reflective Stripes */}
+                                    <polygon points="44,66 48,130 54,130 48,66" fill="#ffffff" opacity="0.6" />
+                                    <polygon points="76,66 72,130 66,130 72,66" fill="#ffffff" opacity="0.6" />
+                                    {/* Bulky Arms */}
+                                    <polygon points="26,68 14,95 20,125 30,105 32,66" fill="#f43f5e" opacity="0.2" stroke="#f43f5e" strokeWidth="0.5" />
+                                    <polygon points="88,66 90,105 100,125 106,95 94,68" fill="#f43f5e" opacity="0.2" stroke="#f43f5e" strokeWidth="0.5" />
+                                    {/* Thicker Lower Body / Hips */}
+                                    <polygon points="26,130 94,130 84,170 36,170" fill="#f43f5e" opacity="0.25" stroke="#f43f5e" strokeWidth="1" />
+                                    {/* Left & Right Muscular Legs */}
+                                    <polygon points="36,170 56,170 54,215 32,215" fill="#f43f5e" opacity="0.3" stroke="#f43f5e" strokeWidth="1" />
+                                    <polygon points="64,170 84,170 88,215 66,215" fill="#f43f5e" opacity="0.3" stroke="#f43f5e" strokeWidth="1" />
+                                </svg>
+                            </div>
+
+                            {/* HUD Bottom Notification Banner */}
+                            <div className="hud-alert-banner">
+                                <div className="alert-title">Alert! Dynamic delimitation areas</div>
+                                <div className="alert-sub">Unsafe state verified &gt; 5.0s // Data logged</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </header>
 
-            {/* Features Section - Giới thiệu tính năng logic hệ thống */}
-            <section className="features-section">
-                <div className="section-header">
-                    <h2 className="section-title">Tính Năng Cốt Lõi</h2>
-                    <p className="section-subtitle">Hệ thống tối ưu hiệu năng tối đa cho doanh nghiệp</p>
+            {/* Core Capabilities Section (No tech leaks, focus on business value) */}
+            <section className="intense-features">
+                <div className="features-head">
+                    <div className="tech-tag">PRODUCT CAPABILITIES</div>
+                    <h2>Comprehensive PPE Detection Matrix</h2>
                 </div>
 
-                <div className="features-grid">
-
-                    {/* Tính năng 1: Quản lý đa Camera */}
-                    <div className="feature-card">
-                        <div className="card-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                                <circle cx="12" cy="13" r="4"/>
+                <div className="intense-grid">
+                    {/* Hard Hat Module */}
+                    <div className="matrix-card">
+                        <div className="matrix-glow"></div>
+                        <div className="matrix-icon helmet-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M2 11a10 10 0 0 1 20 0v2H2z" />
+                                <path d="M12 2v3" />
+                                <path d="M6 13v4a6 6 0 0 0 12 0v-4" />
                             </svg>
                         </div>
-                        <h3 className="card-title">Quản Lý Đa Camera</h3>
-                        <p className="card-desc">Một tài khoản (User) quản lý linh hoạt đồng thời nhiều luồng Camera ở các phân xưởng vị trí khác nhau.</p>
+                        <h3>Hard Hat</h3>
+                        <p>Prevent traumatic injuries caused by falling tools, parts, or crane-mounted hardware in overhead or multi-level workspaces.</p>
+                        <div className="card-redirect" onClick={handleGetStarted}>
+                            <span>Learn more</span> <span className="arrow-svg">→</span>
+                        </div>
                     </div>
 
-                    {/* Tính năng 2: Thuật toán nhận diện chuẩn xác */}
-                    <div className="feature-card">
-                        <div className="card-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
-                                <path d="M9 17V7l7 5z"/>
+                    {/* Reflective Vest Module */}
+                    <div className="matrix-card">
+                        <div className="matrix-glow"></div>
+                        <div className="matrix-icon vest-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M5 3 L10 3 L12 8 L14 3 L19 3 L21 10 L18 21 L6 21 L3 10 Z" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                                <line x1="6" y1="15" x2="18" y2="15" />
                             </svg>
                         </div>
-                        <h3 className="card-title">Phát Hiện Vi Phạm</h3>
-                        <p className="card-desc">Nhận diện chính xác trang phục bảo hộ: Người, Mũ (Helmet), Áo phản quang (Vest), Giày (Shoes) [cite: Dự án là Hệ thống giám sát an toàn lao động (PPE Detection). Kiến trúc bao gồm Microservices với Frontend (ReactJS), API Gateway (Spring Cloud Gateway), Service Discovery (Eureka Server), Backend (Java Spring Boot), AI Service (Python, YOLOv8 nhận diện Người, Helmet, Vest, Shoes từ webcam). Kịch bản demo là đội mũ bảo hộ hiện khung xanh "Safe", bỏ mũ ra hiện khung đỏ "Danger". Quy tắc đặc biệt là chỉ kích hoạt cảnh báo Unsafe nếu vi phạm liên tục quá 5 giây và không lưu file ảnh cắt vi phạm, chỉ ghi log và xuất thống kê ra file Excel.].</p>
+                        <h3>Reflective Vest</h3>
+                        <p>Reduce struck-by risk by ensuring reflective vests are worn near forklifts, AGVs, and heavy mobile equipment inside complex industrial facilities.</p>
+                        <div className="card-redirect" onClick={handleGetStarted}>
+                            <span>Learn more</span> <span className="arrow-svg">→</span>
+                        </div>
                     </div>
 
-                    {/* Tính năng 3: Bộ lọc trễ thông minh */}
-                    <div className="feature-card">
-                        <div className="card-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
+                    {/* Mask / RPE Module */}
+                    <div className="matrix-card">
+                        <div className="matrix-glow"></div>
+                        <div className="matrix-icon mask-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 10c0 7-9 11-9 11s-9-4-9-11V5l9-3 9 3z" />
+                                <path d="M8 10h8" />
+                                <path d="M8 14h8" />
                             </svg>
                         </div>
-                        <h3 className="card-title">Cảnh Báo Trễ 5 Giây</h3>
-                        <p className="card-desc">Loại bỏ hoàn toàn các báo động giả. Chỉ kích hoạt trạng thái "Unsafe" khi phát hiện vi phạm liên tục quá 5 giây [cite: Dự án là Hệ thống giám sát an toàn lao động (PPE Detection). Kiến trúc bao gồm Microservices với Frontend (ReactJS), API Gateway (Spring Cloud Gateway), Service Discovery (Eureka Server), Backend (Java Spring Boot), AI Service (Python, YOLOv8 nhận diện Người, Helmet, Vest, Shoes từ webcam). Kịch bản demo là đội mũ bảo hộ hiện khung xanh "Safe", bỏ mũ ra hiện khung đỏ "Danger". Quy tắc đặc biệt là chỉ kích hoạt cảnh báo Unsafe nếu vi phạm liên tục quá 5 giây và không lưu file ảnh cắt vi phạm, chỉ ghi log và xuất thống kê ra file Excel.].</p>
-                    </div>
-
-                    {/* Tính năng 4: Bảo mật dữ liệu & Xuất thống kê */}
-                    <div className="feature-card">
-                        <div className="card-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                            </svg>
+                        <h3>Respiratory Protection (Mask)</h3>
+                        <p>Ensure respiratory protective equipment is consistently worn to protect against inhalation of harmful industrial dust, vapors, or toxic fumes.</p>
+                        <div className="card-redirect" onClick={handleGetStarted}>
+                            <span>Learn more</span> <span className="arrow-svg">→</span>
                         </div>
-                        <h3 className="card-title">Báo Cáo Thống Kê Excel</h3>
-                        <p className="card-desc">Hệ thống tối ưu lưu trữ bảo mật (không lưu ảnh vi phạm) [cite: Dự án là Hệ thống giám sát an toàn lao động (PPE Detection). Kiến trúc bao gồm Microservices với Frontend (ReactJS), API Gateway (Spring Cloud Gateway), Service Discovery (Eureka Server), Backend (Java Spring Boot), AI Service (Python, YOLOv8 nhận diện Người, Helmet, Vest, Shoes từ webcam). Kịch bản demo là đội mũ bảo hộ hiện khung xanh "Safe", bỏ mũ ra hiện khung đỏ "Danger". Quy tắc đặc biệt là chỉ kích hoạt cảnh báo Unsafe nếu vi phạm liên tục quá 5 giây và không lưu file ảnh cắt vi phạm, chỉ ghi log và xuất thống kê ra file Excel.], ghi log trực tiếp phục vụ việc kết xuất báo cáo thống kê định kỳ sang file Excel.</p>
                     </div>
-
                 </div>
             </section>
-
-            {/* Footer */}
-            <footer className="home-footer">
-                <div className="footer-logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-                        <path d="m9 12 2 2 4-4" />
-                    </svg>
-                    <span>PPE Detector</span>
-                </div>
-                <p>&copy; 2026 Hệ thống Giám Sát An Toàn Lao Động. All rights reserved.</p>
-            </footer>
-
         </div>
     );
 };

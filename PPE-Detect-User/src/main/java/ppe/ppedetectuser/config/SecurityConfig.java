@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -21,6 +22,20 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring().requestMatchers(
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                "/api/v3/api-docs/**",
+                "/api/swagger-ui/**",
+                "/api/swagger-ui.html",
+                "/favicon.ico"
+        );
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -32,10 +47,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 🌟 BỔ SUNG: Chặn đứng hành vi tự động Redirect 302 của OAuth2 khi chưa đăng nhập
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
-                            // Trả về mã lỗi 401 JSON rõ ràng cho ReactJS thay vì chuyển hướng sang Google
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json;charset=UTF-8");
                             response.getWriter().write("{\"message\": \"Phiên xác thực đã hết hạn hoặc không hợp lệ.\"}");
@@ -43,7 +56,7 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Các đường dẫn cấu hình xác thực công khai
                         .requestMatchers(
                                 "/api/oauth2/**",
                                 "/api/login/oauth2/**",
@@ -52,8 +65,9 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/api/auth/google/login").permitAll()
                         .requestMatchers("/api/v1/violations/report").permitAll()
-                        .requestMatchers("/api/v1/auth/logout").authenticated()
 
+                        // Yêu cầu đăng nhập đối với logout và toàn bộ các API nghiệp vụ còn lại
+                        .requestMatchers("/api/v1/auth/logout").authenticated()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

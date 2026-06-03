@@ -1,269 +1,477 @@
-/* HomePage.css */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-.home-page-wrapper {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: #f8fafc;
-    color: #1e293b;
-    line-height: 1.6;
+:root {
+    --bg-dark: #090d16;
+    --bg-card: #111726;
+    --cyan-core: #06b6d4;
+    --cyan-glow: rgba(6, 182, 212, 0.15);
+    --orange-safety: #f97316;
+    --red-alert: #f43f5e;
+    --text-muted: #94a3b8;
+    --border-color: rgba(255, 255, 255, 0.07);
 }
 
-/* Navigation Bar */
-.navbar {
+.intense-landing {
+    background-color: var(--bg-dark);
+    color: #ffffff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative;
+    overflow-x: hidden;
+    display: block;
+}
+
+.cyber-grid {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
+    background-size: 24px 24px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(140px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 2;
+}
+.ambient-glow.cyan {
+    width: 500px;
+    height: 500px;
+    background-color: var(--cyan-core);
+    top: -10%;
+    right: 5%;
+}
+.ambient-glow.orange {
+    width: 400px;
+    height: 400px;
+    background-color: var(--orange-safety);
+    bottom: 20%;
+    left: -5%;
+}
+
+/* Hero Base Structure */
+.intense-hero {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 5%;
-    background: #ffffff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    padding: 6rem 6% 8rem 6%;
+    gap: 4rem;
+    position: relative;
+    z-index: 10;
 }
 
-.nav-logo {
-    display: flex;
+.hero-left {
+    flex: 1.1;
+    text-align: left;
+}
+
+.status-badge {
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-weight: 700;
-    font-size: 1.25rem;
-    color: #14532d;
-}
-
-.nav-logo svg {
-    width: 28px;
-    height: 28px;
-    color: #22c55e;
-}
-
-.nav-btn {
-    background: #22c55e;
-    color: white;
-    border: none;
-    padding: 0.6rem 1.25rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.nav-btn:hover {
-    background: #16a34a;
-    transform: translateY(-1px);
-}
-
-/* Hero Section */
-.hero-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 5rem 5%;
-    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
-    gap: 2rem;
-}
-
-.hero-content {
-    flex: 1;
-    max-width: 600px;
-}
-
-.hero-tag {
-    display: inline-block;
-    background: #dcfce7;
-    color: #16a34a;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-}
-
-.hero-title {
-    font-size: 3rem;
-    font-weight: 800;
-    line-height: 1.2;
-    color: #14532d;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    padding: 0.4rem 0.9rem;
+    border-radius: 30px;
     margin-bottom: 1.5rem;
 }
 
-.hero-title span {
-    color: #22c55e;
+.badge-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--red-alert);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--red-alert);
 }
 
-.hero-desc {
-    font-size: 1.125rem;
-    color: #475569;
-    margin-bottom: 2rem;
+.badge-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.hero-actions {
-    display: flex;
-    gap: 1rem;
+.hero-main-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-bottom: 1.5rem;
 }
 
-.btn-primary {
-    background: #22c55e;
-    color: white;
+.text-gradient {
+    background: linear-gradient(135deg, #ffffff 40%, var(--cyan-core) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-sub-desc {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    max-width: 580px;
+}
+
+/* 🟢 CẢI TIẾN: Nút có mũi tên hướng hành động */
+.btn-primary-intense {
+    background: #ffffff;
+    color: #090d16;
     border: none;
-    padding: 0.8rem 1.75rem;
-    border-radius: 10px;
+    padding: 1rem 2rem;
+    border-radius: 8px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-primary:hover {
-    background: #16a34a;
-    box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.3);
+.action-arrow {
+    transition: transform 0.2s ease;
 }
 
-.hero-image-container {
-    flex: 1;
+.btn-primary-intense:hover {
+    background: var(--cyan-core);
+    color: #000000;
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.3);
+}
+
+.btn-primary-intense:hover .action-arrow {
+    transform: translateX(4px); /* Mũi tên dịch phải tinh tế */
+}
+
+/* Viewport Camera Panel */
+.hero-right {
+    flex: 0.9;
     display: flex;
     justify-content: center;
 }
 
-.mockup-window {
-    background: #1e293b;
-    border-radius: 16px;
+.video-mockup-wrapper {
     width: 100%;
-    max-width: 500px;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+    max-width: 520px;
+    aspect-ratio: 4/3;
+    background: #0f1422;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    border-radius: 12px;
+    position: relative;
     overflow: hidden;
 }
 
-.mockup-header {
-    background: #0f172a;
-    padding: 0.75rem 1rem;
+.scanner-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--red-alert), transparent);
+    top: 0;
+    animation: scan 5s linear infinite;
+    z-index: 5;
+    opacity: 0.4;
+}
+
+@keyframes scan {
+    0% { top: 0%; }
+    50% { top: 100%; }
+    100% { top: 0%; }
+}
+
+.camera-overlay-ui {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
     display: flex;
-    gap: 0.5rem;
+    justify-content: space-between;
+    font-family: 'Space Grotesk', monospace;
+    font-size: 0.75rem;
+    color: #64748b;
+    z-index: 6;
 }
 
-.dot {
-    width: 10px;
-    height: 10px;
+.rec-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--red-alert);
+    font-weight: 700;
+}
+
+.rec-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--red-alert);
     border-radius: 50%;
-    background: #ef4444;
+    animation: blink 1s infinite alternate;
 }
-.dot:nth-child(2) { background: #eab308; }
-.dot:nth-child(3) { background: #22c55e; }
 
-.mockup-body {
-    padding: 2rem;
-    color: #38bdf8;
+@keyframes blink {
+    0% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+.simulated-stream {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(244, 63, 94, 0.04); /* Đỏ mờ bao phủ toàn màn hình lỗi từ ảnh gốc */
+}
+
+/* 🟢 CẢI TIẾN: Vùng nguy hiểm giới hạn Xe nâng (Forklift Zone Red tint) */
+.forklift-danger-zone {
+    position: absolute;
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(244, 63, 94, 0.15) 0%, transparent 100%);
+    left: 0;
+    top: 0;
+    border-right: 1px dashed rgba(244, 63, 94, 0.3);
+}
+
+/* Worker UI Container */
+.simulated-worker-box {
+    position: absolute;
+    width: 160px;
+    height: 230px;
+    border: 1.5px solid var(--red-alert);
+    background: rgba(244, 63, 94, 0.02);
+    bottom: 10%;
+    right: 22%;
+}
+
+.box-label {
+    position: absolute;
+    top: -20px;
+    left: -1px;
+    background: var(--red-alert);
+    color: #ffffff;
+    font-size: 0.7rem;
     font-family: monospace;
-    font-size: 0.9rem;
+    padding: 1px 6px;
+    font-weight: 700;
 }
 
-/* Features Section */
-.features-section {
-    padding: 5rem 5%;
-    background: #ffffff;
+/* 🟢 CẢI TIẾN: Bảng thông số Checklist chuẩn Intenseeye tiếng Anh */
+.ppe-checklist-overlay {
+    position: absolute;
+    left: -140px;
+    top: 30px;
+    background: #090d16;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.65rem;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    min-width: 125px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    font-family: monospace;
+    z-index: 10;
+}
+
+.checklist-header {
+    color: var(--cyan-core);
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.checklist-sub {
+    color: #64748b;
+    font-size: 0.6rem;
+    margin-bottom: 0.25rem;
+}
+
+.check-item {
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+.check-item.ok { color: #22c55e; }
+.check-item.fail { color: var(--red-alert); }
+
+/* 🟢 CẢI TIẾN: Khối nhân thể cơ bắp mập mạp */
+.simulated-3d-body {
+    width: 100%;
+    height: 100%;
+}
+
+.hud-alert-banner {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    background: rgba(9, 13, 22, 0.9);
+    border: 1px solid rgba(244, 63, 94, 0.4);
+    padding: 0.5rem;
+    border-radius: 6px;
     text-align: center;
 }
 
-.section-header {
+.alert-title {
+    color: var(--red-alert);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.alert-sub {
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    margin-top: 1px;
+}
+
+/* Features Capabilities Grid */
+.intense-features {
+    padding: 6rem 6%;
+    background: #0b0f19;
+    border-top: 1px solid var(--border-color);
+    position: relative;
+    z-index: 10;
+}
+
+.features-head {
+    text-align: center;
     margin-bottom: 4rem;
 }
 
-.section-title {
-    font-size: 2rem;
+.tech-tag {
+    font-size: 0.8rem;
+    color: var(--cyan-core);
     font-weight: 700;
-    color: #14532d;
+    letter-spacing: 2px;
     margin-bottom: 0.5rem;
 }
 
-.section-subtitle {
-    color: #64748b;
+.features-head h2 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
-.features-grid {
+.intense-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
 }
 
-.feature-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 2.5rem 1.5rem;
-    text-align: left;
-    transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-    transform: translateY(-5px);
-    border-color: #22c55e;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
-}
-
-.card-icon {
-    width: 48px;
-    height: 48px;
-    background: #dcfce7;
-    color: #22c55e;
+.matrix-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.matrix-glow {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.05);
+    opacity: 0;
+    filter: blur(40px);
+    top: -40px;
+    left: -40px;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.matrix-card:hover .matrix-glow {
+    opacity: 1;
+}
+
+.matrix-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.matrix-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
 }
 
-.card-icon svg {
-    width: 24px;
-    height: 24px;
+.helmet-icon { color: #eab308; }
+.vest-icon { color: #f97316; }
+.mask-icon { color: #06b6d4; }
+
+.matrix-icon svg {
+    width: 22px;
+    height: 22px;
 }
 
-.card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 0.75rem;
-}
-
-.card-desc {
-    color: #64748b;
-    font-size: 0.95rem;
-}
-
-/* Footer */
-.home-footer {
-    background: #0f172a;
-    color: #94a3b8;
-    padding: 3rem 5%;
-    text-align: center;
-    border-top: 1px solid #1e293b;
-}
-
-.footer-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: #ffffff;
+.matrix-card h3 {
+    font-size: 1.3rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
+    font-family: 'Space Grotesk', sans-serif;
 }
 
-.footer-logo svg {
-    width: 24px;
-    height: 24px;
-    color: #22c55e;
+.matrix-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .hero-section {
+/* 🟢 MŨI TÊN CHUYỂN HƯỚNG TỚI TRANG GIỚI THIỆU CHUYÊN NGHIỆP */
+.card-redirect {
+    margin-top: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.arrow-svg {
+    transition: transform 0.2s ease;
+}
+
+.matrix-card:hover .card-redirect {
+    opacity: 1;
+}
+
+.matrix-card:hover .arrow-svg {
+    transform: translateX(4px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 968px) {
+    .intense-hero {
         flex-direction: column;
         text-align: center;
-        padding: 3rem 5%;
+        padding-top: 4rem;
     }
-    .hero-tag { margin: 0 auto 1rem auto; }
-    .hero-actions { justify-content: center; }
-    .hero-title { font-size: 2.25rem; }
+    .hero-sub-desc {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .hero-buttons {
+        justify-content: center;
+    }
 }

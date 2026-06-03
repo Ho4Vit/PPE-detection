@@ -6,37 +6,48 @@ const LoginSuccessPage = () => {
     const { loginWithCookie } = useAuth();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-
-    // 🌟 Biến cờ (flag) dùng để chặn gọi API trùng lặp trong React 18 StrictMode
     const isProcessing = useRef(false);
 
     useEffect(() => {
         const status = searchParams.get("status");
+        const error = searchParams.get("error");
 
+        // ⚠️ 1. PHÁT HIỆN TÀI KHOẢN BỊ KHÓA (active = false) TỪ BACKEND
+        if (error === "disabled") {
+            navigate("/banned", { replace: true });
+            return;
+        }
+
+        // 🟢 2. XỬ LÝ ĐĂNG NHẬP THÀNH CÔNG
         if (status === "success") {
-            // Nếu đang trong quá trình đồng bộ thì bỏ qua, không chạy lại nữa
             if (isProcessing.current) return;
             isProcessing.current = true;
 
-            // Kích hoạt bóc tách dữ liệu từ Cookie để đẩy vào React State
             loginWithCookie()
                 .then(() => {
-                    // Xóa sạch chuỗi "?status=success" trên thanh địa chỉ URL cho an toàn bảo mật
                     window.history.replaceState({}, document.title, window.location.pathname);
 
-                    // Điều hướng người dùng về trang chủ (HomePage) [cite: Dự án là Hệ thống giám sát an toàn lao động (PPE Detection). Kiến trúc bao gồm Microservices với Frontend (ReactJS), API Gateway (Spring Cloud Gateway), Service Discovery (Eureka Server), Backend (Java Spring Boot), AI Service (Python, YOLOv8 nhận diện Người, Helmet, Vest, Shoes từ webcam). Kịch bản demo là đội mũ bảo hộ hiện khung xanh "Safe", bỏ mũ ra hiện khung đỏ "Danger". Quy tắc đặc biệt là chỉ kích hoạt cảnh báo Unsafe nếu vi phạm liên tục quá 5 giây và không lưu file ảnh cắt vi phạm, chỉ ghi log và xuất thống kê ra file Excel.]
-                    navigate("/");
+                    const savedUserStr = localStorage.getItem("ppe_user");
+                    if (savedUserStr) {
+                        const parsedUser = JSON.parse(savedUserStr);
+                        const role = parsedUser.role?.toUpperCase();
+
+                        if (role === "ADMIN" || role === "ROLE_ADMIN") {
+                            navigate("/admin", { replace: true });
+                            return;
+                        }
+                    }
+
+                    navigate("/", { replace: true });
                 })
                 .catch((err) => {
                     console.error("Lỗi đồng bộ Cookie:", err);
-                    navigate("/login");
+                    navigate("/login", { replace: true });
                 });
         } else {
-            // Nếu không có trạng thái success hợp lệ, đẩy ngược lại trang đăng nhập
-            navigate("/login");
+            // Trường hợp URL không có tham số hợp lệ
+            navigate("/login", { replace: true });
         }
-
-        // 🌟 ĐÃ SỬA: Loại bỏ loginWithCookie khỏi danh sách phụ thuộc để chặn đứng loop
     }, [searchParams, navigate]);
 
     return (
@@ -50,7 +61,6 @@ const LoginSuccessPage = () => {
     );
 };
 
-// 🎨 Giữ nguyên thiết kế tông màu Xanh lá cây (Green) đồng bộ hệ thống PPE
 const styles = {
     container: {
         display: "flex",
@@ -87,7 +97,6 @@ const styles = {
     }
 };
 
-// Inject hiệu ứng xoay cho Spinner
 if (typeof document !== "undefined" && document.styleSheets.length > 0) {
     const styleSheet = document.styleSheets[0];
     try {
