@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/authContext.jsx";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
@@ -18,7 +18,8 @@ export default function AdminDashboard() {
     const fetchAllUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:8080/api/v1/users/getall", {
+            // ĐÃ SỬA: Chuyển sang cổng 80 của Nginx Proxy thay vì port cứng 8080
+            const response = await fetch("http://localhost/api/v1/users/getall", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -49,7 +50,8 @@ export default function AdminDashboard() {
     const handleRoleChange = async (userId, newRole) => {
         setUpdatingId(userId);
         try {
-            const response = await fetch(`http://localhost:8080/api/v1/users/${userId}/role`, {
+            // ĐÃ SỬA: Chuyển sang cổng 80 của Nginx Proxy thay vì port cứng 8080
+            const response = await fetch(`http://localhost/api/v1/users/${userId}/role`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -83,7 +85,8 @@ export default function AdminDashboard() {
 
         setTogglingActiveId(userId);
         try {
-            const response = await fetch(`http://localhost:8080/api/v1/users/${userId}/toggle-active`, {
+            // ĐÃ SỬA: Chuyển sang cổng 80 của Nginx Proxy thay vì port cứng 8080
+            const response = await fetch(`http://localhost/api/v1/users/${userId}/toggle-active`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -263,8 +266,9 @@ export default function AdminDashboard() {
                                         <td className="user-id-cell">#{u.id}</td>
                                         <td>
                                             <div className="admin-user-info-cell">
+                                                {/* ĐÃ THAY: Đổi đường dẫn ảnh mặc định sang tài nguyên tĩnh nội bộ */}
                                                 <img
-                                                    src={u.avatarUrl || "https://www.w3schools.com/howto/img_avatar.png"}
+                                                    src={u.avatarUrl || "/assets/default-avatar.png"}
                                                     alt="Avatar"
                                                     className="user-row-avatar"
                                                 />

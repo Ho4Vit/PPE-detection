@@ -1,6 +1,6 @@
 import React from "react";
 import { Routes, Route, Link, Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/authContext.jsx";
 
 // LAYOUT
 import MainLayout from "../components/layouts/MainLayout.jsx";

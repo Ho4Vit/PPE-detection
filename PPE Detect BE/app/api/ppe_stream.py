@@ -2,76 +2,105 @@ import asyncio
 import cv2
 import numpy as np
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from services.detector import YOLODetector
-from services.tracker import ViolationTracker
 
 router = APIRouter()
+
+# Khởi tạo dịch vụ nhận diện từ project
+from services.detector import YOLODetector
+from services.tracker import ViolationTracker
 detector = YOLODetector()
 
 def process_binary_frame(bytes_data: bytes):
     nparr = np.frombuffer(bytes_data, np.uint8)
     return cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-@router.websocket("/ws")
+@router.websocket("/ws/ppe/ws")
 async def ppe_detection_websocket(
     websocket: WebSocket, 
     camera_id: int = 1,
-    hardhat: int = 1,  # Nhận diện tham số nón từ URL (1: bật quét, 0: bỏ qua)
-    vest: int = 1,     # Nhận diện tham số áo từ URL
-    mask: int = 0      # Nhận diện tham số khẩu trang từ URL
+    hardhat: int = 1,  
+    vest: int = 1,     
+    mask: int = 0      
 ):
+    # Chấp nhận bắt tay kết nối
     await websocket.accept()
+    
     tracker = ViolationTracker(camera_id=camera_id, detector_constants=detector)
     
-    # Ép dữ liệu integer 0/1 nhận từ Query Parameter thành cấu hình Boolean cho Tracker
+    # Ép kiểu dữ liệu cấu hình quy tắc giám sát từ URL params
     active_rules = {
         "hardhat": True if hardhat == 1 else False,
         "vest": True if vest == 1 else False,
         "mask": True if mask == 1 else False
     }
     
-    print(f"[WebSocket] Thiết lập camera {camera_id} với quy tắc giám sát hoạt động: {active_rules}")
+    print(f"[WS CONNECTED] Đã kết nối Camera ID: {camera_id} | Rules: {active_rules}")
+    
+    # Khởi tạo Hàng đợi chứa tối đa 1 frame mới nhất (Chống tràn bộ nhớ khi AI xử lý chậm)
     frame_queue = asyncio.Queue(maxsize=1)
 
-    async def receive_frames():
+    is_running = True
+
+    async def receive_loop():
+        nonlocal is_running
         try:
-            while True:
+            while is_running:
+                # Nhận bytes thô từ mạng 
                 bytes_data = await websocket.receive_bytes()
                 frame = process_binary_frame(bytes_data)
+                
                 if frame is not None:
+                    # Nếu AI xử lý không kịp làm queue bị đầy -> Chủ động loại bỏ frame cũ
                     if frame_queue.full():
                         try:
                             frame_queue.get_nowait()
                         except asyncio.QueueEmpty:
                             pass
+                    # Đẩy frame mới nhất vừa nhận vào hàng đợi
                     await frame_queue.put(frame)
+                    
         except WebSocketDisconnect:
-            pass
+            print(f"[WS DISCONNECTED] Camera ID {camera_id} đã ngắt kết nối.")
+        except Exception as e:
+            print(f"[WS RECEIVE ERROR] Lỗi luồng nhận frame: {e}")
+        finally:
+            # Khi luồng nhận dừng (ngắt kết nối), hạ cờ hiệu để kết thúc luôn luồng AI
+            is_running = False
 
-    async def process_frames():
+    # ================= LUỒNG 2: CHẠY AI VÀ TRẢ KẾT QUẢ =================
+    async def process_loop():
+        nonlocal is_running
         try:
-            while True:
-                frame = await frame_queue.get()
+            while is_running:
+                try:
+                    # Chờ lấy ảnh từ queue ra (Tối đa 0.2 giây nếu frontend chưa gửi ảnh mới)
+                    frame = await asyncio.wait_for(frame_queue.get(), timeout=0.2)
+                except asyncio.TimeoutError:
+                    continue
                 
-                # Gọi luồng xử lý AI nhận diện vật thể
+                # Chuyển hàm run_inference đồng bộ của YOLO sang một thread riêng biệt trong ThreadPool
+                # Giúp việc tính toán ma trận nặng của AI không làm nghẽn Event Loop của FastAPI
                 boxes = await asyncio.to_thread(detector.run_inference, frame)
                 
-                # Truyền active_rules nhận được từ giao diện React vào hàm phân tích logic vi phạm
+                # Phân tích luật an toàn lao động (Đếm thời gian vi phạm liên tục > 5s, ghi log Excel local)
                 status, violations = tracker.analyze_violations(
                     boxes=boxes, 
                     current_frame=frame, 
                     active_rules=active_rules
                 )
                 
-                # Trả kết quả JSON đồng bộ trạng thái về giao diện người dùng
-                await websocket.send_json({
-                    "status": status,
-                    "current_violations": violations,
-                    "boxes": boxes
-                })
+                # Trả dữ liệu JSON kết quả về trực tiếp cho UI vẽ bounding box
+                if is_running:
+                    await websocket.send_json({
+                        "status": status,
+                        "current_violations": violations,
+                        "boxes": boxes
+                    })
+                    
         except Exception as e:
-            print(f"[AI Process Error] Lỗi xử lý khung hình stream: {e}")
+            print(f"[AI PROCESS ERROR] Lỗi luồng xử lý AI: {e}")
+        finally:
+            is_running = False
 
-    # Chạy song song tiến trình nhận ảnh và xử lý AI bất đồng bộ
-    asyncio.create_task(receive_frames())
-    await process_frames()
+    # ÉP BẮT BUỘC: Chạy song song đồng thời cả hai luồng nhận và xử lý
+    await asyncio.gather(receive_loop(), process_loop())

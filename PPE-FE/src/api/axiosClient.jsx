@@ -21,7 +21,7 @@ const clearAuthCookies = () => {
 };
 
 const axiosClient = axios.create({
-    baseURL: "http://localhost:8080/api/v1",
+    baseURL: "http://localhost/api/v1",
     timeout: 150000,
     headers: {
         "Content-Type": "application/json",
@@ -60,7 +60,7 @@ axiosClient.interceptors.response.use(
 
             try {
                 // Gọi endpoint refresh (HttpOnly cookie refreshToken tự động được đính kèm)
-                await axios.post("http://localhost:8080/api/v1/auth/refresh", {}, {
+                await axios.post("http://localhost/api/v1/auth/refresh", {}, {
                     withCredentials: true
                 });
 

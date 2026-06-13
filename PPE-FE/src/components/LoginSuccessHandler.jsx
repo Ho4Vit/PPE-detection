@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../context/authContext.jsx";
 
 const LoginSuccessHandler = () => {
     const { loginWithCookie } = useAuth();

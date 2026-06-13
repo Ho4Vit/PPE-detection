@@ -1,6 +1,14 @@
+import os
+import sys
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from api.ppe_stream import router as ppe_websocket_router
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
 from api.api import api_router
 
 app = FastAPI(
@@ -9,17 +17,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Cấu hình CORS cho phép ReactJS Frontend truy cập không bị chặn
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Trong thực tế sản xuất bạn nên thay đổi cụ thể thành IP Frontend của bạn
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Nạp toàn bộ cây Router vào ứng dụng gốc với tiền tố /api/v1
 app.include_router(api_router, prefix="/api/v1")
+
+app.include_router(ppe_websocket_router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

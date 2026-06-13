@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useAuth } from "../../context/authContext.jsx";
 
 export default function MainLayout() {
     const { user: contextUser, isAuthenticated, logout } = useAuth();
@@ -118,7 +118,8 @@ export default function MainLayout() {
                                     <span style={styles.username}>{formatUsername(user?.fullName || user?.name)}</span>
                                     <span style={styles.roleTag}>SYSTEM OPERATOR</span>
                                 </div>
-                                <img src={user?.avatarUrl || "https://www.w3schools.com/howto/img_avatar.png"} alt="Avatar" style={styles.avatar} />
+                                {/* ĐÃ THAY: URL ảnh mặc định trỏ về thư mục tĩnh nội bộ của Docker thay vì gọi ra ngoài internet */}
+                                <img src={user?.avatarUrl || "/assets/default-avatar.png"} alt="Avatar" style={styles.avatar} />
                                 <button style={styles.btnLogout} onClick={logout}>Logout</button>
                             </>
                         ) : (

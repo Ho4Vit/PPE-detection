@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
         deleteCookie("userRole");
         deleteCookie("userFullName");
         deleteCookie("userAvatarUrl");
-        // Điều hướng thẳng về trang đăng nhập bằng href để reset sạch bộ nhớ ram của React
+        // ĐÃ SỬA: Chuyển hướng trực tiếp thông qua cổng 80 chuẩn của Nginx
         window.location.href = "/login";
     };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/authContext.jsx";
 import ExcelJS from "exceljs"; // 🔥 Thư viện cao cấp hỗ trợ chèn ảnh
 import { saveAs } from "file-saver"; // 🔥 Thư viện hỗ trợ tải tệp tin
 import "./CameraViolationPage.css";
@@ -44,7 +44,8 @@ const CameraViolationPage = () => {
         const fetchCameras = async () => {
             const token = currentUser?.token || "";
             try {
-                const response = await fetch(`http://localhost:8080/api/v1/cameras/user/${currentUser.id}`, {
+                // ĐÃ SỬA: Chuyển sang cổng 80 của Nginx Proxy thay vì port cứng 8080
+                const response = await fetch(`http://localhost/api/v1/cameras/user/${currentUser.id}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -84,7 +85,8 @@ const CameraViolationPage = () => {
             const token = currentUser?.token || "";
 
             try {
-                const response = await fetch(`http://localhost:8080/api/v1/violations/camera/${selectedCameraId}`, {
+                // ĐÃ SỬA: Chuyển sang cổng 80 của Nginx Proxy thay vì port cứng 8080
+                const response = await fetch(`http://localhost/api/v1/violations/camera/${selectedCameraId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

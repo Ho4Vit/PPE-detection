@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/authContext.jsx";
 import "./CameraManagement.css";
 
 const CameraManagement = () => {
@@ -24,7 +24,8 @@ const CameraManagement = () => {
         isActive: true
     });
 
-    const API_BASE_URL = "http://localhost:8080/api/v1/cameras";
+    // ĐÃ SỬA: Chuyển sang cổng 80 của Nginx Proxy thay vì port cứng 8080 để định tuyến qua API Gateway chuẩn Docker
+    const API_BASE_URL = "http://localhost/api/v1/cameras";
 
     useEffect(() => {
         if (authLoading) return;

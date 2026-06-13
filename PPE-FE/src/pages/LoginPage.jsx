@@ -4,7 +4,8 @@ import "./LoginPage.css";
 const LoginPage = () => {
     // Redirect handling via secure corporate identity management proxy
     const handleGoogleLogin = () => {
-        window.location.href = "http://localhost:8080/api/oauth2/authorization/google";
+        // ĐÃ SỬA: Loại bỏ cổng cứng 8080, điều hướng qua cổng 80 của Nginx Proxy/API Gateway
+        window.location.href = "http://localhost/oauth2/authorization/google";
     };
 
     return (

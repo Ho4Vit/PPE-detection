@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  ppe-frontend:
+    build: .
+    container_name: ppe-react-frontend
+    ports: ["80:80"]
+    networks: [ppe-global-network]
+
+networks:
+  ppe-global-network:
+    external: true

@@ -1,6 +1,5 @@
 package ppe.ppedetectuser.config;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -67,42 +66,33 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String refreshToken = jwtService.generateRefreshToken(user);
 
         int oneDayInSeconds = 24 * 60 * 60;
+        int oneWeekInSeconds = 7 * 24 * 60 * 60;
 
-        Cookie accessCookie = new Cookie("accessToken", accessToken);
-        accessCookie.setHttpOnly(false);
-        accessCookie.setSecure(false);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(oneDayInSeconds);
-        response.addCookie(accessCookie);
+        addCookieHeader(response, "accessToken", accessToken, oneDayInSeconds, false);
+        addCookieHeader(response, "refreshToken", refreshToken, oneWeekInSeconds, true);
+        addCookieHeader(response, "userRole", user.getRole().name(), oneDayInSeconds, false);
+        addCookieHeader(response, "userId", user.getId().toString(), oneDayInSeconds, false);
 
-        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(false);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(7 * 24 * 60 * 60);
-        response.addCookie(refreshCookie);
+        String encodedName = URLEncoder.encode(user.getFullName() != null ? user.getFullName() : "Người dùng", StandardCharsets.UTF_8);
+        addCookieHeader(response, "userFullName", encodedName, oneDayInSeconds, false);
 
-        Cookie roleCookie = new Cookie("userRole", user.getRole().name());
-        roleCookie.setPath("/");
-        roleCookie.setMaxAge(oneDayInSeconds);
-        response.addCookie(roleCookie);
-
-        Cookie idCookie = new Cookie("userId", user.getId().toString());
-        idCookie.setPath("/");
-        idCookie.setMaxAge(oneDayInSeconds);
-        response.addCookie(idCookie);
-
-        String encodedName = URLEncoder.encode(user.getFullName() != null ? user.getFullName() : "Người dùng", StandardCharsets.UTF_8.toString());
-        Cookie nameCookie = new Cookie("userFullName", encodedName);
-        nameCookie.setPath("/");
-        nameCookie.setMaxAge(oneDayInSeconds);
-        response.addCookie(nameCookie);
-
-        Cookie avatarCookie = new Cookie("userAvatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : "");
-        avatarCookie.setPath("/");
-        avatarCookie.setMaxAge(oneDayInSeconds);
-        response.addCookie(avatarCookie);
+        String avatarUrl = user.getAvatarUrl() != null ? user.getAvatarUrl() : "";
+        addCookieHeader(response, "userAvatarUrl", avatarUrl, oneDayInSeconds, false);
 
         response.sendRedirect(frontendRedirectUrl + "?status=success");
+    }
+
+    /**
+     * Helper để tạo header Set-Cookie thủ công
+     */
+    private void addCookieHeader(HttpServletResponse response, String name, String value, int maxAge, boolean httpOnly) {
+        StringBuilder cookie = new StringBuilder();
+        cookie.append(name).append("=").append(value).append("; ");
+        cookie.append("Path=/; ");
+        cookie.append("Max-Age=").append(maxAge).append("; ");
+        if (httpOnly) cookie.append("HttpOnly; ");
+        cookie.append("SameSite=Lax"); // Quan trọng: Lax cho phép gửi cookie khi redirect từ Google về
+
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 }
